@@ -163,11 +163,6 @@ def clip_(lib):
 
 
 @OpRegister.operator
-def conv_(lib):
-    pass
-
-
-@OpRegister.operator
 def gemm_(lib):
     lib.infiniopCreateGemmDescriptor.restype = c_int32
     lib.infiniopCreateGemmDescriptor.argtypes = [
@@ -888,3 +883,34 @@ def where_(lib):
         infiniopOperatorDescriptor_t,
     ]
     
+
+@OpRegister.operator
+def silu_(lib):
+    lib.infiniopCreateSiluDescriptor.restype = c_int32
+    lib.infiniopCreateSiluDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+    ]
+
+    lib.infiniopGetSiluWorkspaceSize.restype = c_int32
+    lib.infiniopGetSiluWorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]
+
+    lib.infiniopSilu.restype = c_int32
+    lib.infiniopSilu.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+
+    lib.infiniopDestroySiluDescriptor.restype = c_int32
+    lib.infiniopDestroySiluDescriptor.argtypes = [
+        infiniopOperatorDescriptor_t,
+    ]
