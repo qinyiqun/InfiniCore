@@ -919,3 +919,36 @@ def reduce_max_(lib):
     lib.infiniopDestroyReduceMaxDescriptor.argtypes = [
         infiniopOperatorDescriptor_t,
     ]
+
+@OpRegister.operator
+def relu_backward_(lib):
+    lib.infiniopCreateReluBackwardDescriptor.restype = c_int32
+    lib.infiniopCreateReluBackwardDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+    ]
+
+    lib.infiniopGetReluBackwardWorkspaceSize.restype = c_int32
+    lib.infiniopGetReluBackwardWorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]
+
+    lib.infiniopReluBackward.restype = c_int32
+    lib.infiniopReluBackward.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+
+    lib.infiniopDestroyReluBackwardDescriptor.restype = c_int32
+    lib.infiniopDestroyReluBackwardDescriptor.argtypes = [
+        infiniopOperatorDescriptor_t,
+    ]
