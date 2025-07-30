@@ -919,3 +919,34 @@ def reduce_max_(lib):
     lib.infiniopDestroyReduceMaxDescriptor.argtypes = [
         infiniopOperatorDescriptor_t,
     ]
+
+@OpRegister.operator
+def gelu_(lib):
+    lib.infiniopCreateGeluDescriptor.restype = c_int32
+    lib.infiniopCreateGeluDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+    ]
+
+    lib.infiniopGetGeluWorkspaceSize.restype = c_int32
+    lib.infiniopGetGeluWorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]
+
+    lib.infiniopGelu.restype = c_int32
+    lib.infiniopGelu.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+
+    lib.infiniopDestroyGeluDescriptor.restype = c_int32
+    lib.infiniopDestroyGeluDescriptor.argtypes = [
+        infiniopOperatorDescriptor_t,
+    ]
