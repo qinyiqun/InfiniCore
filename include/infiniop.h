@@ -23,6 +23,7 @@
 #include "infiniop/ops/random_sample.h"
 #include "infiniop/ops/rearrange.h"
 #include "infiniop/ops/relu.h"
+#include "infiniop/ops/relu_backward.h"
 #include "infiniop/ops/rms_norm.h"
 #include "infiniop/ops/rope.h"
 #include "infiniop/ops/silu.h"
