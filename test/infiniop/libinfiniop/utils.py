@@ -156,6 +156,9 @@ class TestTensor(CTensor):
         return TestTensor(
             shape_, strides_, dt, device, mode="manual", set_tensor=torch_tensor
         )
+    
+    def update_torch_tensor(self, new_tensor: torch.Tensor):
+        self._torch_tensor = new_tensor
 
 
 def to_torch_dtype(dt: InfiniDtype, compatability_mode=False):
