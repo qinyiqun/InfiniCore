@@ -1084,6 +1084,7 @@ def relu_backward_(lib):
         infiniopOperatorDescriptor_t,
     ]
 
+
 @OpRegister.operator
 def gelu_(lib):
     lib.infiniopCreateGeluDescriptor.restype = c_int32
@@ -1112,5 +1113,39 @@ def gelu_(lib):
 
     lib.infiniopDestroyGeluDescriptor.restype = c_int32
     lib.infiniopDestroyGeluDescriptor.argtypes = [
+        infiniopOperatorDescriptor_t,
+    ]
+
+
+@OpRegister.operator
+def gelu_backward_(lib):
+    lib.infiniopCreateGeluBackwardDescriptor.restype = c_int32
+    lib.infiniopCreateGeluBackwardDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+    ]
+
+    lib.infiniopGetGeluBackwardWorkspaceSize.restype = c_int32
+    lib.infiniopGetGeluBackwardWorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]
+
+    lib.infiniopGeluBackward.restype = c_int32
+    lib.infiniopGeluBackward.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+
+    lib.infiniopDestroyGeluBackwardDescriptor.restype = c_int32
+    lib.infiniopDestroyGeluBackwardDescriptor.argtypes = [
         infiniopOperatorDescriptor_t,
     ]
