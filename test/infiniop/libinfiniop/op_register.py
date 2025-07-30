@@ -982,3 +982,37 @@ def logical_and_(lib):
     lib.infiniopDestroyLogicalAndDescriptor.argtypes = [
         infiniopOperatorDescriptor_t,
     ]
+
+
+@OpRegister.operator
+def logical_or_(lib):
+    lib.infiniopCreateLogicalOrDescriptor.restype = c_int32
+    lib.infiniopCreateLogicalOrDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+    ]
+
+    lib.infiniopGetLogicalOrWorkspaceSize.restype = c_int32
+    lib.infiniopGetLogicalOrWorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]
+
+    lib.infiniopLogicalOr.restype = c_int32
+    lib.infiniopLogicalOr.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+
+    lib.infiniopDestroyLogicalOrDescriptor.restype = c_int32
+    lib.infiniopDestroyLogicalOrDescriptor.argtypes = [
+        infiniopOperatorDescriptor_t,
+    ]
