@@ -29,6 +29,7 @@ DECLARE_INFINIOP_TEST(averagepool)
 DECLARE_INFINIOP_TEST(cross_entropy_loss)
 DECLARE_INFINIOP_TEST(logical_and)
 DECLARE_INFINIOP_TEST(logical_or)
+DECLARE_INFINIOP_TEST(equal)
 
 #define REGISTER_INFINIOP_TEST(name)                      \
     {                                                     \
@@ -64,6 +65,7 @@ DECLARE_INFINIOP_TEST(logical_or)
         REGISTER_INFINIOP_TEST(div)                 \
         REGISTER_INFINIOP_TEST(logical_and)         \
         REGISTER_INFINIOP_TEST(logical_or)          \
+        REGISTER_INFINIOP_TEST(equal)               \
     }
 
 namespace infiniop_test {
