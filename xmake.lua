@@ -62,6 +62,16 @@ if has_config("cudnn") then
     add_defines("ENABLE_CUDNN_API")
 end
 
+option("cublaslt")
+    set_default(true)
+    set_showmenu(true)
+    set_description("Whether to compile cublaslt for Nvidia GPU")
+option_end()
+
+if has_config("cublaslt") then
+    add_defines("ENABLE_CUBLASLT_API")
+end
+
 -- 寒武纪
 option("cambricon-mlu")
     set_default(false)
@@ -244,7 +254,7 @@ target("infiniop")
             get_config("mode")
         )
         add_shflags("-s", "-shared", "-fPIC")
-        add_links("cublas", "cudnn", "cudadevrt", "cudart_static", "rt", "pthread", "dl")
+        add_links("cublas", "cublaslt", "cudnn", "cudadevrt", "cudart_static", "rt", "pthread", "dl")
         -- Using -linfiniop-nvidia will fail, manually link the target using full path
         add_deps("nv-gpu", {inherit = false})
         add_links(builddir.."/libinfiniop-nvidia.a")

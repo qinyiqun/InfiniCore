@@ -11,8 +11,13 @@
 #include <cudnn.h>
 #endif
 
+#ifdef ENABLE_CUBLASLT_API
+#include <cublasLt.h>
+#endif
+
 #define CHECK_CUBLAS(API) CHECK_INTERNAL(API, CUBLAS_STATUS_SUCCESS)
 #define CHECK_CUDNN(API) CHECK_INTERNAL(API, CUDNN_STATUS_SUCCESS)
+#define CHECK_CUBLASLT(API) CHECK_INTERNAL(API, CUBLAS_STATUS_SUCCESS)
 
 namespace device::nvidia {
 
@@ -20,6 +25,9 @@ class Handle::Internal {
     Pool<cublasHandle_t> blas_handles;
 #ifdef ENABLE_CUDNN_API
     Pool<cudnnHandle_t> dnn_handles;
+#endif
+#ifdef ENABLE_CUBLASLT_API
+    Pool<cublasLtHandle_t> blaslt_handles;
 #endif
 
     int _warp_size,
@@ -36,6 +44,9 @@ public:
     infiniStatus_t useCublas(cudaStream_t stream, const Fn<cublasHandle_t> &f) const;
 #ifdef ENABLE_CUDNN_API
     infiniStatus_t useCudnn(cudaStream_t stream, const Fn<cudnnHandle_t> &f) const;
+#endif
+#ifdef ENABLE_CUBLASLT_API
+    infiniStatus_t useCublasLt(cudaStream_t stream, const Fn<cublasLtHandle_t> &f) const;
 #endif
 
     int warpSize() const;
