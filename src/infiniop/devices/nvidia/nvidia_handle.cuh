@@ -6,6 +6,7 @@
 #include "nvidia_handle.h"
 #include <cublas_v2.h>
 #include <functional>
+#include <cuda_fp8.h>
 
 #ifdef ENABLE_CUDNN_API
 #include <cudnn.h>
