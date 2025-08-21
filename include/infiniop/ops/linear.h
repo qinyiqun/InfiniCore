@@ -15,14 +15,19 @@ __C __export infiniStatus_t infiniopCreateLinearDescriptor(infiniopHandle_t hand
 __C __export infiniStatus_t infiniopGetLinearWorkspaceSize(infiniopLinearDescriptor_t desc, size_t *size);
 
 __C __export infiniStatus_t infiniopLinear(infiniopLinearDescriptor_t desc,
+                                           float alpha,
+                                           const void *a,
+                                           const void *a_scale,
+                                           const void *b,
+                                           const void *b_scale,
+                                           float beta,
+                                           const void *c,
+                                           const void *c_scale,
+                                           const void *bias,
+                                           void *d,
+                                           const void *d_scale,
                                            void *workspace,
                                            size_t workspace_size,
-                                           void *d,
-                                           void const *a,
-                                           void const *b,
-                                           void const *c,
-                                           float alpha,
-                                           float beta,
                                            void *stream);
 
 __C __export infiniStatus_t infiniopDestroyLinearDescripor(infiniopLinearDescriptor_t desc);

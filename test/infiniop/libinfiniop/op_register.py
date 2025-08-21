@@ -510,14 +510,19 @@ def linear_(lib):
     lib.infiniopLinear.restype = c_int32
     lib.infiniopLinear.argtypes = [
         infiniopOperatorDescriptor_t,
+        c_float,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_float,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
         c_void_p,
         c_size_t,
-        c_void_p,
-        c_void_p,
-        c_void_p,
-        c_void_p,
-        c_float,
-        c_float,
         c_void_p,
     ]
 

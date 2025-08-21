@@ -58,20 +58,26 @@ infiniopGetLinearWorkspaceSize(
 __C infiniStatus_t
 infiniopLinear(
     infiniopLinearDescriptor_t desc,
-    void *workspace, size_t workspace_size,
-    void *d,
-    const void *a,
-    const void *b,
-    const void *c,
     float alpha,
+    const void *a,
+    const void *a_scale,
+    const void *b,
+    const void *b_scale,
     float beta,
+    const void *c,
+    const void *c_scale,
+    const void *bias,
+    void *d,
+    const void *d_scale,
+    void *workspace,
+    size_t workspace_size,
     void *stream) {
 
-#define CALCULATE(CASE, NAMESPACE)                                               \
-    case CASE:                                                                   \
-        return reinterpret_cast<const op::linear::NAMESPACE::Descriptor *>(desc) \
-            ->calculate(alpha, a, b, beta, c, d,                                 \
-                        workspace, workspace_size,                               \
+#define CALCULATE(CASE, NAMESPACE)                                                         \
+    case CASE:                                                                             \
+        return reinterpret_cast<const op::linear::NAMESPACE::Descriptor *>(desc)           \
+            ->calculate(alpha, a, a_scale, b, b_scale, beta, c, c_scale, bias, d, d_scale, \
+                        workspace, workspace_size,                                         \
                         stream)
     switch (desc->device_type) {
 

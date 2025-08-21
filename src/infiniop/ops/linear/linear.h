@@ -43,11 +43,17 @@
         infiniStatus_t calculate(                                \
             float alpha,                                         \
             const void *a,                                       \
+            const void *a_scale,                                 \
             const void *b,                                       \
+            const void *b_scale,                                 \
             float beta,                                          \
             const void *c,                                       \
+            const void *c_scale,                                 \
+            const void *bias,                                    \
             void *d,                                             \
-            void *workspace, size_t workspace_size,              \
+            const void *d_scale,                                 \
+            void *workspace,                                     \
+            size_t workspace_size,                               \
             void *stream) const;                                 \
     };                                                           \
     }

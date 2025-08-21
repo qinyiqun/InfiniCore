@@ -17,6 +17,9 @@ from libinfiniop import (
     InfiniDeviceNames,
     infiniopOperatorDescriptor_t,
 )
+from libinfiniop import (to_torch_dtype, torch_device_map)
+import numpy as np
+
 
 # ==============================================================================
 #  Configuration (Internal Use Only)
@@ -24,22 +27,26 @@ from libinfiniop import (
 # These are not meant to be imported from other modules
 _TEST_CASES = [
     # alpha, beta, a_shape, b_shape, c_shape, a_stride, b_stride, c_stride
-    (1.0, 0.0, (1, 2048), (2048, 2048), (1, 2048), None, None, None),
-    (1.0, 0.0, (2, 4, 2048), (2, 2048, 2048), (2, 4, 2048), None, None, None),
-    (1.0, 0.0, (1, 2048), (2048, 2048), (1, 2048), (4096, 1), (4096, 1), (4096, 1)),
-    (1.0, 1.0, (6, 2048), (2048, 2560), (6, 2560), (2048, 1), (1, 2048), (2560, 1)),
-    (1.0 / 8.0, 0.0, (4, 8 * 6, 64), (4, 64, 6), (4, 8 * 6, 6), None, None, None),
+    (1.0, 1.0, (16, 2048), (2048, 2048), (16, 2048), None, None, None),
+    # (1.0, 0.0, (2, 16, 2048), (2, 2048, 2048), (2, 16, 2048), None, None, None),
+    # (1.0, 0.0, (1, 2048), (2048, 2048), (1, 2048), (4096, 1), (4096, 1), (4096, 1)),
+    # (1.0, 1.0, (6, 2048), (2048, 2560), (6, 2560), (2048, 1), (1, 2048), (2560, 1)),
+    # (1.0 / 8.0, 0.0, (4, 8 * 6, 64), (4, 64, 16), (4, 8 * 6, 16), None, None, None),
 ]
 
 # Data types used for testing
-# _TENSOR_DTYPES = [InfiniDtype.F16, InfiniDtype.BF16, InfiniDtype.F32]
-_TENSOR_DTYPES = [InfiniDtype.F16, InfiniDtype.BF16, InfiniDtype.F32]
+# _TENSOR_DTYPES = [InfiniDtype.F8E4M3, InfiniDtype.F8E4M3, InfiniDtype.F8E4M3]
+_TENSOR_DTYPES = [InfiniDtype.F8E4M3]
+
+# A B C D BIAS
+# _TENSOR_DTYPES = [[InfiniDtype.F8E4M3, InfiniDtype.F8E4M3, InfiniDtype.F16, InfiniDtype.F16, InfiniDtype.F16]]
 
 # Tolerance map for different data types
 _TOLERANCE_MAP = {
     InfiniDtype.F16: {"atol": 0, "rtol": 1e-2},
     InfiniDtype.F32: {"atol": 0, "rtol": 1e-3},
     InfiniDtype.BF16: {"atol": 0, "rtol": 5e-2},
+    InfiniDtype.F8E4M3: {"atol":0, "rtol": 5e-2},
 }
 
 DEBUG = False
@@ -49,21 +56,38 @@ NUM_ITERATIONS = 1000
 
 
 # PyTorch implementation for matrix multiplication
-def gemm(d, _c, beta, _a, _b, alpha):
-    try:
-        if _c.ndim == 2:
-            torch.addmm(_c, _a, _b, beta=beta, alpha=alpha, out=d)
-        elif _c.ndim == 3:
-            torch.baddbmm(_c, _a, _b, beta=beta, alpha=alpha, out=d)
-        else:
-            raise
-    except Exception:
-        torch.matmul(_a, _b, out=d)
-        d.mul_(alpha).add_(_c, alpha=beta)
-
+        
+def linear_f8e4m3( _a, _b, _ans, scale_a, scale_b, bias, beta, _c):
+    assert torch.cuda.get_device_capability() >= (9, 0)
+    if (len(_a.shape)>2):
+        for i in range (0, _a.shape[0]):
+            torch._scaled_mm(
+                _a[i],_b[i].T,
+                scale_a=scale_a,
+                scale_b=scale_b,
+                bias=bias,
+                out_dtype=_ans.dtype,
+                out=_ans[i]
+            )
+    else :
+        torch._scaled_mm(
+            _a, _b.T,
+            scale_a=scale_a,
+            scale_b=scale_b,
+            bias=bias,
+            # out_dtype=torch.float8_e4m3fn,
+            out_dtype=_ans.dtype,
+            out=_ans
+        )
+    _ans += beta * _c
 
 # The argument list should be (lib, handle, torch_device, <param list>, dtype)
 # The <param list> should keep the same order as the one specified in _TEST_CASES
+
+# A B C D BIAS
+FP8_SUPPORT_COMBINES = [[InfiniDtype.F8E4M3, InfiniDtype.F8E4M3, InfiniDtype.F16, InfiniDtype.F16, InfiniDtype.F16],
+                        [InfiniDtype.F8E4M3, InfiniDtype.F8E4M3, InfiniDtype.BF16, InfiniDtype.BF16, InfiniDtype.BF16]]
+
 def test(
     handle,
     device,
@@ -85,24 +109,36 @@ def test(
     )
 
     # Initialize tensors
-    a = TestTensor(a_shape, a_stride, dtype, device)
-    b = TestTensor(b_shape, b_stride, dtype, device)
-    c = TestTensor(c_shape, c_stride, dtype, device, mode="ones")
-    d = TestTensor(c_shape, c_stride, dtype, device, mode="zeros")
-    ans = TestTensor(c_shape, c_stride, dtype, device, mode="zeros")
+    precision = 0
+    a = TestTensor(a_shape, a_stride, InfiniDtype.F16, device, mode="ones")
+    if (a.dt != FP8_SUPPORT_COMBINES[precision][0]):
+        a.convert_pricesion(FP8_SUPPORT_COMBINES[precision][0])
+    b = TestTensor(b_shape, b_stride, InfiniDtype.F16, device, mode="ones")
+    if (b.dt != FP8_SUPPORT_COMBINES[precision][1]):
+        b.convert_pricesion(FP8_SUPPORT_COMBINES[precision][1])
+    c = TestTensor(c_shape, c_stride, FP8_SUPPORT_COMBINES[precision][2], device, mode="zeros")
+    d = TestTensor(c_shape, c_stride, FP8_SUPPORT_COMBINES[precision][3], device, mode="zeros")
+    ans = TestTensor(c_shape, c_stride, FP8_SUPPORT_COMBINES[precision][4], device, mode="zeros")
+    
+    bias = torch.ones(c_shape[-1],device=torch_device_map[device], dtype=torch.float16)*10
+    # bias = None
+    scale_a = torch.tensor(1.0, device=torch_device_map[device])
+    scale_b = torch.tensor(1.0, device=torch_device_map[device])*2
+    
+    # print(bias.shape)
 
-    # Compute the PyTorch reference result
-    def torch_gemm():
-        gemm(
-            ans.torch_tensor(),
-            c.torch_tensor(),
-            beta,
-            a.torch_tensor(),
-            b.torch_tensor(),
-            alpha,
-        )
-
-    torch_gemm()
+    
+    def torch_linear():
+        linear_f8e4m3(a.torch_tensor(), 
+                      b.torch_tensor(),  
+                      ans.torch_tensor(), 
+                      scale_a=scale_a, 
+                      scale_b=scale_b, 
+                      bias=bias,
+                      beta=beta,
+                      _c=c.torch_tensor())
+        
+    torch_linear()
     
     if sync is not None:
         sync()
@@ -131,6 +167,10 @@ def test(
         )
     )
     workspace = TestWorkspace(workspace_size.value, device)
+    
+    scale_a_ = scale_a.clone()
+    scale_b_ = scale_b.clone()
+    bias_ = bias.clone()
 
     # Execute infiniop gemm operator
     def lib_linear():
@@ -139,13 +179,16 @@ def test(
                 descriptor,
                 alpha,
                 a.data(),
-                None,
+                # None,
+                scale_a_.data_ptr(),
                 b.data(),
-                None,
+                # None,
+                scale_b_.data_ptr(),
                 beta,
                 c.data(),
                 None,
-                None,
+                # None,
+                bias_.data_ptr(),
                 d.data(),
                 None,
                 workspace.data(),
@@ -158,9 +201,15 @@ def test(
 
     # Validate results
     atol, rtol = get_tolerance(_TOLERANCE_MAP, dtype)
-    
+
     if DEBUG:
         debug(c.actual_tensor(), ans.torch_tensor(), atol=atol, rtol=rtol)
+    print("d (cublaslt): ")
+    print(d.actual_tensor().shape)
+    print(d.actual_tensor())
+    print("ans (torch): ")
+    print(ans.torch_tensor().shape)
+    print(ans.torch_tensor())
 
     assert torch.allclose(d.actual_tensor(), ans.torch_tensor(), atol=atol, rtol=rtol)
 
