@@ -110,10 +110,10 @@ def test(
 
     # Initialize tensors
     precision = 0
-    a = TestTensor(a_shape, a_stride, InfiniDtype.F16, device, mode="ones")
+    a = TestTensor(a_shape, a_stride, InfiniDtype.F16, device)
     if (a.dt != FP8_SUPPORT_COMBINES[precision][0]):
         a.convert_pricesion(FP8_SUPPORT_COMBINES[precision][0])
-    b = TestTensor(b_shape, b_stride, InfiniDtype.F16, device, mode="ones")
+    b = TestTensor(b_shape, b_stride, InfiniDtype.F16, device)
     if (b.dt != FP8_SUPPORT_COMBINES[precision][1]):
         b.convert_pricesion(FP8_SUPPORT_COMBINES[precision][1])
     c = TestTensor(c_shape, c_stride, FP8_SUPPORT_COMBINES[precision][2], device, mode="zeros")

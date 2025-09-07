@@ -45,5 +45,5 @@ InfiniDtypeNames = {
     InfiniDtype.C64: "C64",
     InfiniDtype.BF16: "BF16",
     InfiniDtype.F8E4M3: "F8E4M3",
-    InfiniDtype.F8E5M2: "F8E5M2"
+    InfiniDtype.F8E5M2: "F8E5M2",
 }
