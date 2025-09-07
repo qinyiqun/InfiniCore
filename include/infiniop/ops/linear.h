@@ -30,6 +30,6 @@ __C __export infiniStatus_t infiniopLinear(infiniopLinearDescriptor_t desc,
                                            size_t workspace_size,
                                            void *stream);
 
-__C __export infiniStatus_t infiniopDestroyLinearDescripor(infiniopLinearDescriptor_t desc);
+__C __export infiniStatus_t infiniopDestroyLinearDescriptor(infiniopLinearDescriptor_t desc);
 
 #endif
