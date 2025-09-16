@@ -586,3 +586,34 @@ def softplus_(lib):
     ]
     lib.infiniopDestroySoftplusDescriptor.restype = c_int32
     lib.infiniopDestroySoftplusDescriptor.argtypes = [infiniopOperatorDescriptor_t]
+
+@OpRegister.operator
+def tanh_(lib):
+    lib.infiniopCreateTanhDescriptor.restype = c_int32
+    lib.infiniopCreateTanhDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+    ]
+
+    lib.infiniopGetTanhWorkspaceSize.restype = c_int32
+    lib.infiniopGetTanhWorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]
+
+    lib.infiniopTanh.restype = c_int32
+    lib.infiniopTanh.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+
+    lib.infiniopDestroyTanhDescriptor.restype = c_int32
+    lib.infiniopDestroyTanhDescriptor.argtypes = [
+        infiniopOperatorDescriptor_t,
+    ]

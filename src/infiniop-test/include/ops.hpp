@@ -16,6 +16,7 @@ DECLARE_INFINIOP_TEST(add)
 DECLARE_INFINIOP_TEST(causal_softmax)
 DECLARE_INFINIOP_TEST(rearrange)
 DECLARE_INFINIOP_TEST(sub)
+DECLARE_INFINIOP_TEST(tanh)
 
 #define REGISTER_INFINIOP_TEST(name)                      \
     {                                                     \
