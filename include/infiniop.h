@@ -20,5 +20,9 @@
 #include "infiniop/ops/swiglu.h"
 #include "infiniop/ops/topkrouter.h"
 #include "infiniop/tensor_descriptor.h"
+#include "infiniop/ops/reduce_mean.h"
+#include "infiniop/ops/reduce_max.h"
+#include "infiniop/ops/cos.h"
+#include "infiniop/ops/leaky_relu.h"
 
 #endif // __INFINIOP_API_H__
