@@ -572,3 +572,123 @@ def quantize_(lib):
         infiniopOperatorDescriptor_t,
     ]
     
+
+@OpRegister.operator
+def reduce_mean_(lib):
+    lib.infiniopCreateReduceMeanDescriptor.restype = c_int32
+    lib.infiniopCreateReduceMeanDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        c_size_t,
+    ]
+
+    lib.infiniopGetReduceMeanWorkspaceSize.restype = c_int32
+    lib.infiniopGetReduceMeanWorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]
+
+    lib.infiniopReduceMean.restype = c_int32
+    lib.infiniopReduceMean.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+
+    lib.infiniopDestroyReduceMeanDescriptor.restype = c_int32
+    lib.infiniopDestroyReduceMeanDescriptor.argtypes = [
+        infiniopOperatorDescriptor_t,
+    ]
+
+
+@OpRegister.operator
+def reduce_max_(lib):
+    lib.infiniopCreateReduceMaxDescriptor.restype = c_int32
+    lib.infiniopCreateReduceMaxDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        c_size_t,
+    ]
+
+    lib.infiniopGetReduceMaxWorkspaceSize.restype = c_int32
+    lib.infiniopGetReduceMaxWorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]
+
+    lib.infiniopReduceMax.restype = c_int32
+    lib.infiniopReduceMax.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+
+    lib.infiniopDestroyReduceMaxDescriptor.restype = c_int32
+    lib.infiniopDestroyReduceMaxDescriptor.argtypes = [
+        infiniopOperatorDescriptor_t,
+    ]
+
+
+@OpRegister.operator
+def cos_(lib):
+    lib.infiniopCreateCosDescriptor.restype = c_int32
+    lib.infiniopCreateCosDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+    ]
+    lib.infiniopCos.restype = c_int32
+    lib.infiniopCos.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+    lib.infiniopDestroyCosDescriptor.restype = c_int32
+    lib.infiniopDestroyCosDescriptor.argtypes = [infiniopOperatorDescriptor_t]
+
+
+@OpRegister.operator
+def leaky_relu_(lib):
+    lib.infiniopCreateLeakyReLUDescriptor.restype = c_int32
+    lib.infiniopCreateLeakyReLUDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        c_float,
+    ]
+
+    lib.infiniopGetLeakyReLUWorkspaceSize.restype = c_int32
+    lib.infiniopGetLeakyReLUWorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]
+
+    lib.infiniopLeakyReLU.restype = c_int32
+    lib.infiniopLeakyReLU.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+
+    lib.infiniopDestroyLeakyReLUDescriptor.restype = c_int32
+    lib.infiniopDestroyLeakyReLUDescriptor.argtypes = [
+        infiniopOperatorDescriptor_t,
+    ]
