@@ -4,7 +4,7 @@ from .structs import (
     infiniopOperatorDescriptor_t,
 )
 
-from ctypes import c_int32, c_void_p, c_size_t, POINTER, c_float
+from ctypes import c_int32, c_void_p, c_size_t, POINTER, c_float, c_bool
 
 
 class OpRegister:
@@ -586,3 +586,34 @@ def softplus_(lib):
     ]
     lib.infiniopDestroySoftplusDescriptor.restype = c_int32
     lib.infiniopDestroySoftplusDescriptor.argtypes = [infiniopOperatorDescriptor_t]
+
+@OpRegister.operator
+def interpolate_nearest_(lib):
+    lib.infiniopCreateInterpolateNearestDescriptor.restype = c_int32
+    lib.infiniopCreateInterpolateNearestDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,  # output_desc
+        infiniopTensorDescriptor_t,  # input_desc
+    ]
+
+    lib.infiniopGetInterpolateNearestWorkspaceSize.restype = c_int32
+    lib.infiniopGetInterpolateNearestWorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]
+
+    lib.infiniopInterpolateNearest.restype = c_int32
+    lib.infiniopInterpolateNearest.argtypes = [
+        infiniopOperatorDescriptor_t,  # descriptor
+        c_void_p,  # workspace
+        c_size_t,  # workspace_size
+        c_void_p,  # output
+        c_void_p,  # input
+        c_void_p,  # stream
+    ]
+
+    lib.infiniopDestroyInterpolateNearestDescriptor.restype = c_int32
+    lib.infiniopDestroyInterpolateNearestDescriptor.argtypes = [
+        infiniopOperatorDescriptor_t,
+    ]
