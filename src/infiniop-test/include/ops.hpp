@@ -17,6 +17,12 @@ DECLARE_INFINIOP_TEST(causal_softmax)
 DECLARE_INFINIOP_TEST(rearrange)
 DECLARE_INFINIOP_TEST(sub)
 DECLARE_INFINIOP_TEST(interpolate_nearest)
+DECLARE_INFINIOP_TEST(maxpool)
+DECLARE_INFINIOP_TEST(tanh)
+DECLARE_INFINIOP_TEST(sin)
+DECLARE_INFINIOP_TEST(exp)
+DECLARE_INFINIOP_TEST(averagepool)
+DECLARE_INFINIOP_TEST(cross_entropy_loss)
 
 #define REGISTER_INFINIOP_TEST(name)                      \
     {                                                     \
@@ -44,6 +50,9 @@ DECLARE_INFINIOP_TEST(interpolate_nearest)
         REGISTER_INFINIOP_TEST(causal_softmax)      \
         REGISTER_INFINIOP_TEST(rearrange)           \
         REGISTER_INFINIOP_TEST(sub)                 \
+        REGISTER_INFINIOP_TEST(averagepool)         \
+        REGISTER_INFINIOP_TEST(cross_entropy_loss)  \
+        REGISTER_INFINIOP_TEST(maxpool)             \
         REGISTER_INFINIOP_TEST(interpolate_nearest) \
     }
 
