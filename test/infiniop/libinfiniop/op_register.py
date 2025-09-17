@@ -565,7 +565,6 @@ def dequantize_(lib):
         infiniopOperatorDescriptor_t,
     ]
 
-
 @OpRegister.operator
 def softplus_(lib):
     lib.infiniopCreateSoftplusDescriptor.restype = c_int32
@@ -586,6 +585,7 @@ def softplus_(lib):
     ]
     lib.infiniopDestroySoftplusDescriptor.restype = c_int32
     lib.infiniopDestroySoftplusDescriptor.argtypes = [infiniopOperatorDescriptor_t]
+
 
 @OpRegister.operator
 def cross_entropy_loss_(lib):
@@ -618,7 +618,8 @@ def cross_entropy_loss_(lib):
     lib.infiniopDestroyCrossEntropyLossDescriptor.argtypes = [
         infiniopOperatorDescriptor_t,
     ]
-    
+
+
 @OpRegister.operator
 def avg_pool_(lib):
     lib.infiniopCreateAvgPoolDescriptor.restype = c_int32
@@ -652,7 +653,8 @@ def avg_pool_(lib):
     lib.infiniopDestroyAvgPoolDescriptor.argtypes = [
         infiniopOperatorDescriptor_t,
     ]
-    
+
+
 @OpRegister.operator
 def exp_(lib):
     lib.infiniopCreateExpDescriptor.restype = c_int32
@@ -684,7 +686,8 @@ def exp_(lib):
     lib.infiniopDestroyExpDescriptor.argtypes = [
         infiniopOperatorDescriptor_t,
     ]
-    
+
+
 @OpRegister.operator
 def sin_(lib):
     lib.infiniopCreateSinDescriptor.restype = c_int32
@@ -716,4 +719,35 @@ def sin_(lib):
         infiniopOperatorDescriptor_t,
         POINTER(c_size_t),
     ]
+ 
+@OpRegister.operator     
+def tanh_(lib):
+    lib.infiniopCreateTanhDescriptor.restype = c_int32
+    lib.infiniopCreateTanhDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+    ]
       
+    lib.infiniopGetTanhWorkspaceSize.restype = c_int32
+    lib.infiniopGetTanhWorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]
+      
+    lib.infiniopTanh.restype = c_int32
+    lib.infiniopTanh.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+      
+    lib.infiniopDestroyTanhDescriptor.restype = c_int32
+    lib.infiniopDestroyTanhDescriptor.argtypes = [
+        infiniopOperatorDescriptor_t,
+    ]
+    

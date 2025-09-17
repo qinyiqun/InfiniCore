@@ -25,6 +25,7 @@ def run_tests(args):
         "sub.py",
         "swiglu.py",
         "softplus.py",
+        "tanh.py",
         "sin.py",
         "exp.py",
     ]:

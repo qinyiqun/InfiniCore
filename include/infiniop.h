@@ -22,6 +22,7 @@
 #include "infiniop/ops/sin.h"
 #include "infiniop/ops/sub.h"
 #include "infiniop/ops/swiglu.h"
+#include "infiniop/ops/tanh.h"
 #include "infiniop/ops/topkrouter.h"
 #include "infiniop/tensor_descriptor.h"
 
