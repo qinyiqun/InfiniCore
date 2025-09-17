@@ -25,6 +25,7 @@ def run_tests(args):
         "sub.py",
         "swiglu.py",
         "softplus.py",
+        "sin.py",
         "exp.py",
     ]:
         result = subprocess.run(
