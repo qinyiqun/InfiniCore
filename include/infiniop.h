@@ -20,5 +20,6 @@
 #include "infiniop/ops/swiglu.h"
 #include "infiniop/ops/topkrouter.h"
 #include "infiniop/tensor_descriptor.h"
+#include "infiniop/ops/index_copy_inplace.h"
 
 #endif // __INFINIOP_API_H__

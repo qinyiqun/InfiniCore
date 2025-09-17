@@ -586,3 +586,33 @@ def softplus_(lib):
     ]
     lib.infiniopDestroySoftplusDescriptor.restype = c_int32
     lib.infiniopDestroySoftplusDescriptor.argtypes = [infiniopOperatorDescriptor_t]
+
+@OpRegister.operator
+def index_copy_inplace_(lib):
+    lib.infiniopCreateIndexCopyInplaceDescriptor.restype = c_int32
+    lib.infiniopCreateIndexCopyInplaceDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        c_size_t,
+    ]
+    lib.infiniopGetIndexCopyInplaceWorkspaceSize.restype = c_int32
+    lib.infiniopGetIndexCopyInplaceWorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]    
+    lib.infiniopIndexCopyInplace.restype = c_int32
+    lib.infiniopIndexCopyInplace.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+    lib.infiniopDestroyIndexCopyInplaceDescriptor.restype = c_int32
+    lib.infiniopDestroyIndexCopyInplaceDescriptor.argtypes = [infiniopOperatorDescriptor_t]
+
