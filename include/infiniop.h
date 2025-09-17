@@ -27,6 +27,7 @@
 #include "infiniop/ops/swiglu.h"
 #include "infiniop/ops/tanh.h"
 #include "infiniop/ops/topkrouter.h"
+#include "infiniop/ops/where.h"
 #include "infiniop/tensor_descriptor.h"
 
 #endif // __INFINIOP_API_H__
