@@ -26,6 +26,8 @@ def run_tests(args):
         "swiglu.py",
         "softplus.py",
         "tanh.py",
+        "sin.py",
+        "exp.py",
     ]:
         result = subprocess.run(
             f"python {test} {args} --debug", text=True, encoding="utf-8", shell=True
