@@ -586,3 +586,36 @@ def softplus_(lib):
     ]
     lib.infiniopDestroySoftplusDescriptor.restype = c_int32
     lib.infiniopDestroySoftplusDescriptor.argtypes = [infiniopOperatorDescriptor_t]
+
+@OpRegister.operator
+def cross_entropy_loss_(lib):
+    lib.infiniopCreateCrossEntropyLossDescriptor.restype = c_int32
+    lib.infiniopCreateCrossEntropyLossDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,  # loss_desc
+        infiniopTensorDescriptor_t,  # logits_desc
+        infiniopTensorDescriptor_t,  # target_desc
+    ]
+
+    lib.infiniopGetCrossEntropyLossWorkspaceSize.restype = c_int32
+    lib.infiniopGetCrossEntropyLossWorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]
+
+    lib.infiniopCrossEntropyLoss.restype = c_int32
+    lib.infiniopCrossEntropyLoss.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,  # workspace
+        c_size_t,  # workspace_size
+        c_void_p,  # loss
+        c_void_p,  # logits
+        c_void_p,  # target
+        c_void_p,  # stream
+    ]
+
+    lib.infiniopDestroyCrossEntropyLossDescriptor.restype = c_int32
+    lib.infiniopDestroyCrossEntropyLossDescriptor.argtypes = [
+        infiniopOperatorDescriptor_t,
+    ]
