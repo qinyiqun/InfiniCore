@@ -12,6 +12,7 @@
 #include "infiniop/ops/dequantize.h"
 #include "infiniop/ops/exp.h"
 #include "infiniop/ops/gemm.h"
+#include "infiniop/ops/hardswish.h"
 #include "infiniop/ops/interpolate_nearest.h"
 #include "infiniop/ops/maxpool.h"
 #include "infiniop/ops/mul.h"

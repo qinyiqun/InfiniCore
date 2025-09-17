@@ -668,10 +668,10 @@ def exp_(lib):
 
     lib.infiniopGetExpWorkspaceSize.restype = c_int32
     lib.infiniopGetExpWorkspaceSize.argtypes = [
-
         infiniopOperatorDescriptor_t,
         POINTER(c_size_t),
     ]
+
 
     lib.infiniopExp.restype = c_int32
     lib.infiniopExp.argtypes = [
@@ -817,6 +817,38 @@ def interpolate_nearest_(lib):
       
     lib.infiniopDestroyInterpolateNearestDescriptor.restype = c_int32
     lib.infiniopDestroyInterpolateNearestDescriptor.argtypes = [
+        infiniopOperatorDescriptor_t,
+    ]
+
+
+@OpRegister.operator
+def hardswish_(lib):
+    lib.infiniopCreateHardswishDescriptor.restype = c_int32
+    lib.infiniopCreateHardswishDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+    ]
+      
+    lib.infiniopGetHardswishWorkspaceSize.restype = c_int32
+    lib.infiniopGetHardswishWorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]
+      
+    lib.infiniopHardswish.restype = c_int32
+    lib.infiniopHardswish.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+    
+    lib.infiniopDestroyHardswishDescriptor.restype = c_int32
+    lib.infiniopDestroyHardswishDescriptor.argtypes = [
         infiniopOperatorDescriptor_t,
     ]
     
