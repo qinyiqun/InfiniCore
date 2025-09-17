@@ -586,3 +586,36 @@ def softplus_(lib):
     ]
     lib.infiniopDestroySoftplusDescriptor.restype = c_int32
     lib.infiniopDestroySoftplusDescriptor.argtypes = [infiniopOperatorDescriptor_t]
+
+@OpRegister.operator
+def rms_norm_backward_(lib):
+    lib.infiniopCreateRMSNormBackwardDescriptor.restype = c_int32
+    lib.infiniopCreateRMSNormBackwardDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+    ]
+    lib.infiniopGetRMSNormBackwardWorkspaceSize.restype = c_int32
+    lib.infiniopGetRMSNormBackwardWorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]    
+    lib.infiniopRMSNormBackward.restype = c_int32
+    lib.infiniopRMSNormBackward.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+    lib.infiniopDestroyRMSNormBackwardDescriptor.restype = c_int32
+    lib.infiniopDestroyRMSNormBackwardDescriptor.argtypes = [infiniopOperatorDescriptor_t]
+

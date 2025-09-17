@@ -20,5 +20,6 @@
 #include "infiniop/ops/swiglu.h"
 #include "infiniop/ops/topkrouter.h"
 #include "infiniop/tensor_descriptor.h"
+#include "infiniop/ops/rms_norm_backward.h"
 
 #endif // __INFINIOP_API_H__
