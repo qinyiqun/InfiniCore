@@ -4,7 +4,7 @@ from .structs import (
     infiniopOperatorDescriptor_t,
 )
 
-from ctypes import c_int32, c_void_p, c_size_t, POINTER, c_float
+from ctypes import c_int32, c_void_p, c_size_t, POINTER, c_float, c_bool
 
 
 class OpRegister:
@@ -603,7 +603,6 @@ def cross_entropy_loss_(lib):
         infiniopOperatorDescriptor_t,
         POINTER(c_size_t),
     ]
-
     lib.infiniopCrossEntropyLoss.restype = c_int32
     lib.infiniopCrossEntropyLoss.argtypes = [
         infiniopOperatorDescriptor_t,
@@ -617,5 +616,39 @@ def cross_entropy_loss_(lib):
 
     lib.infiniopDestroyCrossEntropyLossDescriptor.restype = c_int32
     lib.infiniopDestroyCrossEntropyLossDescriptor.argtypes = [
+        infiniopOperatorDescriptor_t,
+    ]
+    
+@OpRegister.operator
+def avg_pool_(lib):
+    lib.infiniopCreateAvgPoolDescriptor.restype = c_int32
+    lib.infiniopCreateAvgPoolDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,  # output_desc
+        infiniopTensorDescriptor_t,  # input_desc
+        c_void_p,  # kernel_size
+        c_void_p,  # strides
+        c_void_p,  # pads
+        c_bool,  # ceil_mode
+    ]
+
+    lib.infiniopGetAvgPoolWorkspaceSize.restype = c_int32
+    lib.infiniopGetAvgPoolWorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]
+    lib.infiniopAvgPool.restype = c_int32
+    lib.infiniopAvgPool.argtypes = [
+        infiniopOperatorDescriptor_t,  # descriptor
+        c_void_p,  # workspace
+        c_size_t,  # workspace_size
+        c_void_p,  # output
+        c_void_p,  # input
+        c_void_p,  # stream
+    ]
+
+    lib.infiniopDestroyAvgPoolDescriptor.restype = c_int32
+    lib.infiniopDestroyAvgPoolDescriptor.argtypes = [
         infiniopOperatorDescriptor_t,
     ]
