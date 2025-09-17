@@ -565,7 +565,6 @@ def dequantize_(lib):
         infiniopOperatorDescriptor_t,
     ]
 
-
 @OpRegister.operator
 def softplus_(lib):
     lib.infiniopCreateSoftplusDescriptor.restype = c_int32
@@ -586,6 +585,7 @@ def softplus_(lib):
     ]
     lib.infiniopDestroySoftplusDescriptor.restype = c_int32
     lib.infiniopDestroySoftplusDescriptor.argtypes = [infiniopOperatorDescriptor_t]
+
 
 @OpRegister.operator
 def cross_entropy_loss_(lib):
@@ -618,7 +618,8 @@ def cross_entropy_loss_(lib):
     lib.infiniopDestroyCrossEntropyLossDescriptor.argtypes = [
         infiniopOperatorDescriptor_t,
     ]
-    
+
+
 @OpRegister.operator
 def avg_pool_(lib):
     lib.infiniopCreateAvgPoolDescriptor.restype = c_int32
@@ -652,7 +653,8 @@ def avg_pool_(lib):
     lib.infiniopDestroyAvgPoolDescriptor.argtypes = [
         infiniopOperatorDescriptor_t,
     ]
-    
+
+
 @OpRegister.operator
 def exp_(lib):
     lib.infiniopCreateExpDescriptor.restype = c_int32
@@ -684,7 +686,8 @@ def exp_(lib):
     lib.infiniopDestroyExpDescriptor.argtypes = [
         infiniopOperatorDescriptor_t,
     ]
-    
+
+
 @OpRegister.operator
 def sin_(lib):
     lib.infiniopCreateSinDescriptor.restype = c_int32
@@ -747,3 +750,4 @@ def tanh_(lib):
     lib.infiniopDestroyTanhDescriptor.argtypes = [
         infiniopOperatorDescriptor_t,
     ]
+    
