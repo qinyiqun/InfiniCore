@@ -66,12 +66,24 @@ class TestTensor(CTensor):
                 torch_strides.append(strides[i])
             else:
                 torch_shape.append(shape[i])
+
+        is_bool = dt == InfiniDtype.BOOL
+        if is_bool:
+            dt = InfiniDtype.F32
+
+        is_int = (
+            dt == InfiniDtype.I8
+            or dt == InfiniDtype.I16
+            or dt == InfiniDtype.I32
+            or dt == InfiniDtype.I64
+        )
+
         torch_dtype = to_torch_dtype(dt)
         if mode == "random":
-            if dt == InfiniDtype.I8:
+            if is_int:
                 self._torch_tensor = torch.randint(
-                    -128,
-                    128,
+                    0,
+                    100,
                     torch_shape,
                     dtype=to_torch_dtype(dt),
                     device=torch_device_map[device],
@@ -101,6 +113,9 @@ class TestTensor(CTensor):
             )
         else:
             raise ValueError("Unsupported mode")
+
+        if is_bool:
+            self._torch_tensor = self._torch_tensor > 0.5
 
         if scale is not None:
             if torch_dtype in [
@@ -157,6 +172,9 @@ class TestTensor(CTensor):
             shape_, strides_, dt, device, mode="manual", set_tensor=torch_tensor
         )
 
+    def update_torch_tensor(self, new_tensor: torch.Tensor):
+        self._torch_tensor = new_tensor
+
 
 def to_torch_dtype(dt: InfiniDtype, compatability_mode=False):
     if dt == InfiniDtype.I8:
@@ -177,6 +195,8 @@ def to_torch_dtype(dt: InfiniDtype, compatability_mode=False):
         return torch.float32
     elif dt == InfiniDtype.F64:
         return torch.float64
+    elif dt == InfiniDtype.BOOL:
+        return torch.bool
     # TODO: These following types may not be supported by older
     # versions of PyTorch. Use compatability mode to convert them.
     elif dt == InfiniDtype.U16:
@@ -560,7 +580,7 @@ def profile_operation(desc, func, torch_device, NUM_PRERUN, NUM_ITERATIONS):
 
     # Timed execution
     elapsed = timed_op(lambda: func(), NUM_ITERATIONS, torch_device)
-    print(f" {desc} time: {elapsed * 1000 :6f} ms")
+    print(f" {desc} time: {elapsed * 1000:6f} ms")
 
 
 def test_operator(device, test_func, test_cases, tensor_dtypes):
