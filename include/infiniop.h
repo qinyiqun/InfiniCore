@@ -12,6 +12,7 @@
 #include "infiniop/ops/dequantize.h"
 #include "infiniop/ops/exp.h"
 #include "infiniop/ops/gemm.h"
+#include "infiniop/ops/maxpool.h"
 #include "infiniop/ops/mul.h"
 #include "infiniop/ops/random_sample.h"
 #include "infiniop/ops/rearrange.h"

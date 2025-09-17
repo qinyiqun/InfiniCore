@@ -16,6 +16,7 @@ DECLARE_INFINIOP_TEST(add)
 DECLARE_INFINIOP_TEST(causal_softmax)
 DECLARE_INFINIOP_TEST(rearrange)
 DECLARE_INFINIOP_TEST(sub)
+DECLARE_INFINIOP_TEST(maxpool)
 DECLARE_INFINIOP_TEST(tanh)
 DECLARE_INFINIOP_TEST(sin)
 DECLARE_INFINIOP_TEST(exp)
@@ -51,6 +52,7 @@ DECLARE_INFINIOP_TEST(cross_entropy_loss)
         REGISTER_INFINIOP_TEST(sub)                \
         REGISTER_INFINIOP_TEST(averagepool)        \
         REGISTER_INFINIOP_TEST(cross_entropy_loss) \
+        REGISTER_INFINIOP_TEST(maxpool)            \
     }
 
 namespace infiniop_test {
