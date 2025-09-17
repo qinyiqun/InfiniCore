@@ -718,7 +718,6 @@ def sin_(lib):
     lib.infiniopDestroySinDescriptor.restype = c_int32
     lib.infiniopDestroySinDescriptor.argtypes = [
         infiniopOperatorDescriptor_t,
-        POINTER(c_size_t),
     ]
  
 @OpRegister.operator     
