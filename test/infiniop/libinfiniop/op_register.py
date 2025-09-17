@@ -586,3 +586,33 @@ def softplus_(lib):
     ]
     lib.infiniopDestroySoftplusDescriptor.restype = c_int32
     lib.infiniopDestroySoftplusDescriptor.argtypes = [infiniopOperatorDescriptor_t]
+
+@OpRegister.operator
+def scatter_(lib):
+    lib.infiniopCreateScatterDescriptor.restype = c_int32
+    lib.infiniopCreateScatterDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        c_size_t,
+    ]
+    lib.infiniopGetScatterWorkspaceSize.restype = c_int32
+    lib.infiniopGetScatterWorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]    
+    lib.infiniopScatter.restype = c_int32
+    lib.infiniopScatter.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+    lib.infiniopDestroyScatterDescriptor.restype = c_int32
+    lib.infiniopDestroyScatterDescriptor.argtypes = [infiniopOperatorDescriptor_t]
+
