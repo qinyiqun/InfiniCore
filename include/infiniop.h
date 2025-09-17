@@ -10,6 +10,7 @@
 #include "infiniop/ops/conv.h"
 #include "infiniop/ops/cross_entropy_loss.h"
 #include "infiniop/ops/dequantize.h"
+#include "infiniop/ops/exp.h"
 #include "infiniop/ops/gemm.h"
 #include "infiniop/ops/mul.h"
 #include "infiniop/ops/random_sample.h"
