@@ -15,6 +15,8 @@ DECLARE_INFINIOP_TEST(swiglu)
 DECLARE_INFINIOP_TEST(add)
 DECLARE_INFINIOP_TEST(causal_softmax)
 DECLARE_INFINIOP_TEST(rearrange)
+DECLARE_INFINIOP_TEST(silu)
+DECLARE_INFINIOP_TEST(div)
 DECLARE_INFINIOP_TEST(sub)
 DECLARE_INFINIOP_TEST(where)
 DECLARE_INFINIOP_TEST(hardswish)
@@ -25,6 +27,12 @@ DECLARE_INFINIOP_TEST(sin)
 DECLARE_INFINIOP_TEST(exp)
 DECLARE_INFINIOP_TEST(averagepool)
 DECLARE_INFINIOP_TEST(cross_entropy_loss)
+DECLARE_INFINIOP_TEST(logical_and)
+DECLARE_INFINIOP_TEST(logical_or)
+DECLARE_INFINIOP_TEST(equal)
+DECLARE_INFINIOP_TEST(relu_backward)
+DECLARE_INFINIOP_TEST(gelu)
+DECLARE_INFINIOP_TEST(gelu_backward)
 
 #define REGISTER_INFINIOP_TEST(name)                      \
     {                                                     \
@@ -56,6 +64,14 @@ DECLARE_INFINIOP_TEST(cross_entropy_loss)
         REGISTER_INFINIOP_TEST(cross_entropy_loss)  \
         REGISTER_INFINIOP_TEST(maxpool)             \
         REGISTER_INFINIOP_TEST(interpolate_nearest) \
+        REGISTER_INFINIOP_TEST(silu)                \
+        REGISTER_INFINIOP_TEST(div)                 \
+        REGISTER_INFINIOP_TEST(logical_and)         \
+        REGISTER_INFINIOP_TEST(logical_or)          \
+        REGISTER_INFINIOP_TEST(equal)               \
+        REGISTER_INFINIOP_TEST(relu_backward)       \
+        REGISTER_INFINIOP_TEST(gelu)                \
+        REGISTER_INFINIOP_TEST(gelu_backward)       \
     }
 
 namespace infiniop_test {
