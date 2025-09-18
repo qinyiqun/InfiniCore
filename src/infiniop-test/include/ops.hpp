@@ -25,6 +25,7 @@ DECLARE_INFINIOP_TEST(sin)
 DECLARE_INFINIOP_TEST(exp)
 DECLARE_INFINIOP_TEST(averagepool)
 DECLARE_INFINIOP_TEST(cross_entropy_loss)
+DECLARE_INFINIOP_TEST(scatter)
 
 #define REGISTER_INFINIOP_TEST(name)                      \
     {                                                     \
@@ -56,6 +57,7 @@ DECLARE_INFINIOP_TEST(cross_entropy_loss)
         REGISTER_INFINIOP_TEST(cross_entropy_loss)  \
         REGISTER_INFINIOP_TEST(maxpool)             \
         REGISTER_INFINIOP_TEST(interpolate_nearest) \
+        REGISTER_INFINIOP_TEST(scatter)             \
     }
 
 namespace infiniop_test {
