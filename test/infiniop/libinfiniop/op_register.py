@@ -919,3 +919,39 @@ def reduce_max_(lib):
     lib.infiniopDestroyReduceMaxDescriptor.argtypes = [
         infiniopOperatorDescriptor_t,
     ]
+
+
+@OpRegister.operator
+def layer_norm_(lib):
+    lib.infiniopCreateLayerNormDescriptor.restype = c_int32
+    lib.infiniopCreateLayerNormDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        c_float,
+    ]
+    lib.infiniopGetLayerNormWorkspaceSize.restype = c_int32
+    lib.infiniopGetLayerNormWorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]    
+    lib.infiniopLayerNorm.restype = c_int32
+    lib.infiniopLayerNorm.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+    lib.infiniopDestroyLayerNormDescriptor.restype = c_int32
+    lib.infiniopDestroyLayerNormDescriptor.argtypes = [infiniopOperatorDescriptor_t]
