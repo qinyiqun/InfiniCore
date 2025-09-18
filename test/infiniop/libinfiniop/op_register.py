@@ -919,3 +919,42 @@ def reduce_max_(lib):
     lib.infiniopDestroyReduceMaxDescriptor.argtypes = [
         infiniopOperatorDescriptor_t,
     ]
+
+
+@OpRegister.operator
+def batch_norm_backward_(lib):
+    lib.infiniopCreateBatchNormBackwardDescriptor.restype = c_int32
+    lib.infiniopCreateBatchNormBackwardDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+    ]
+    lib.infiniopGetBatchNormBackwardWorkspaceSize.restype = c_int32
+    lib.infiniopGetBatchNormBackwardWorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]    
+    lib.infiniopBatchNormBackward.restype = c_int32
+    lib.infiniopBatchNormBackward.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+    lib.infiniopDestroyBatchNormBackwardDescriptor.restype = c_int32
+    lib.infiniopDestroyBatchNormBackwardDescriptor.argtypes = [infiniopOperatorDescriptor_t]
