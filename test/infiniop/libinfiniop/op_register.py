@@ -886,4 +886,36 @@ def where_(lib):
     lib.infiniopDestroyWhereDescriptor.argtypes = [
         infiniopOperatorDescriptor_t,
     ]
-    
+
+
+@OpRegister.operator
+def reduce_max_(lib):
+    lib.infiniopCreateReduceMaxDescriptor.restype = c_int32
+    lib.infiniopCreateReduceMaxDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        c_size_t,
+    ]
+
+    lib.infiniopGetReduceMaxWorkspaceSize.restype = c_int32
+    lib.infiniopGetReduceMaxWorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]
+
+    lib.infiniopReduceMax.restype = c_int32
+    lib.infiniopReduceMax.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+
+    lib.infiniopDestroyReduceMaxDescriptor.restype = c_int32
+    lib.infiniopDestroyReduceMaxDescriptor.argtypes = [
+        infiniopOperatorDescriptor_t,
+    ]
