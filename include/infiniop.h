@@ -15,6 +15,7 @@
 #include "infiniop/ops/gemm.h"
 #include "infiniop/ops/hardswish.h"
 #include "infiniop/ops/interpolate_nearest.h"
+#include "infiniop/ops/logical_and.h"
 #include "infiniop/ops/logical_or.h"
 #include "infiniop/ops/maxpool.h"
 #include "infiniop/ops/mul.h"
