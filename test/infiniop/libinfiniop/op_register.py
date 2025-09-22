@@ -922,6 +922,39 @@ def reduce_max_(lib):
 
 
 @OpRegister.operator
+def div_(lib):
+    lib.infiniopCreateDivDescriptor.restype = c_int32
+    lib.infiniopCreateDivDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+    ]
+
+    lib.infiniopGetDivWorkspaceSize.restype = c_int32
+    lib.infiniopGetDivWorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]
+
+    lib.infiniopDiv.restype = c_int32
+    lib.infiniopDiv.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+
+    lib.infiniopDestroyDivDescriptor.restype = c_int32
+    lib.infiniopDestroyDivDescriptor.argtypes = [
+        infiniopOperatorDescriptor_t,
+    ]
+      
+@OpRegister.operator
 def equal_(lib):
     lib.infiniopCreateEqualDescriptor.restype = c_int32
     lib.infiniopCreateEqualDescriptor.argtypes = [
@@ -931,6 +964,7 @@ def equal_(lib):
         infiniopTensorDescriptor_t,
         infiniopTensorDescriptor_t,
     ]
+      
     lib.infiniopGetEqualWorkspaceSize.restype = c_int32
     lib.infiniopGetEqualWorkspaceSize.argtypes = [
         infiniopOperatorDescriptor_t,
@@ -946,5 +980,6 @@ def equal_(lib):
         c_void_p,
         c_void_p,
     ]
+    
     lib.infiniopDestroyEqualDescriptor.restype = c_int32
     lib.infiniopDestroyEqualDescriptor.argtypes = [infiniopOperatorDescriptor_t]

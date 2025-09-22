@@ -15,6 +15,7 @@ DECLARE_INFINIOP_TEST(swiglu)
 DECLARE_INFINIOP_TEST(add)
 DECLARE_INFINIOP_TEST(causal_softmax)
 DECLARE_INFINIOP_TEST(rearrange)
+DECLARE_INFINIOP_TEST(div)
 DECLARE_INFINIOP_TEST(sub)
 DECLARE_INFINIOP_TEST(where)
 DECLARE_INFINIOP_TEST(hardswish)
@@ -58,6 +59,7 @@ DECLARE_INFINIOP_TEST(equal)
         REGISTER_INFINIOP_TEST(maxpool)             \
         REGISTER_INFINIOP_TEST(interpolate_nearest) \
         REGISTER_INFINIOP_TEST(equal)               \
+        REGISTER_INFINIOP_TEST(div)                 \
     }
 
 namespace infiniop_test {
