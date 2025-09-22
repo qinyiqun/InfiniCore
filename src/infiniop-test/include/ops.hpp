@@ -26,6 +26,7 @@ DECLARE_INFINIOP_TEST(sin)
 DECLARE_INFINIOP_TEST(exp)
 DECLARE_INFINIOP_TEST(averagepool)
 DECLARE_INFINIOP_TEST(cross_entropy_loss)
+DECLARE_INFINIOP_TEST(logical_or)
 DECLARE_INFINIOP_TEST(layer_norm)
 DECLARE_INFINIOP_TEST(index_copy_inplace)
 DECLARE_INFINIOP_TEST(gather)
@@ -63,6 +64,7 @@ DECLARE_INFINIOP_TEST(equal)
         REGISTER_INFINIOP_TEST(cross_entropy_loss)  \
         REGISTER_INFINIOP_TEST(maxpool)             \
         REGISTER_INFINIOP_TEST(interpolate_nearest) \
+        REGISTER_INFINIOP_TEST(logical_or)          \
         REGISTER_INFINIOP_TEST(layer_norm)          \
         REGISTER_INFINIOP_TEST(index_copy_inplace)  \
         REGISTER_INFINIOP_TEST(gather)              \
