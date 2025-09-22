@@ -15,6 +15,7 @@ DECLARE_INFINIOP_TEST(swiglu)
 DECLARE_INFINIOP_TEST(add)
 DECLARE_INFINIOP_TEST(causal_softmax)
 DECLARE_INFINIOP_TEST(rearrange)
+DECLARE_INFINIOP_TEST(div)
 DECLARE_INFINIOP_TEST(sub)
 DECLARE_INFINIOP_TEST(where)
 DECLARE_INFINIOP_TEST(hardswish)
@@ -26,6 +27,9 @@ DECLARE_INFINIOP_TEST(exp)
 DECLARE_INFINIOP_TEST(averagepool)
 DECLARE_INFINIOP_TEST(cross_entropy_loss)
 DECLARE_INFINIOP_TEST(gather)
+DECLARE_INFINIOP_TEST(scatter)
+DECLARE_INFINIOP_TEST(batch_norm)
+DECLARE_INFINIOP_TEST(equal)
 
 #define REGISTER_INFINIOP_TEST(name)                      \
     {                                                     \
@@ -58,6 +62,10 @@ DECLARE_INFINIOP_TEST(gather)
         REGISTER_INFINIOP_TEST(maxpool)             \
         REGISTER_INFINIOP_TEST(interpolate_nearest) \
         REGISTER_INFINIOP_TEST(gather)              \
+        REGISTER_INFINIOP_TEST(scatter)             \
+        REGISTER_INFINIOP_TEST(batch_norm)          \
+        REGISTER_INFINIOP_TEST(equal)               \
+        REGISTER_INFINIOP_TEST(div)                 \
     }
 
 namespace infiniop_test {
