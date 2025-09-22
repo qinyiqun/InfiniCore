@@ -32,6 +32,7 @@
 #include "infiniop/ops/where.h"
 #include "infiniop/tensor_descriptor.h"
 #include "infiniop/ops/reduce_max.h"
+#include "infiniop/ops/gather.h"
 #include "infiniop/ops/scatter.h"
 #include "infiniop/ops/batch_norm.h"
 #include "infiniop/ops/equal.h"
