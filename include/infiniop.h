@@ -31,5 +31,7 @@
 #include "infiniop/ops/topkrouter.h"
 #include "infiniop/ops/where.h"
 #include "infiniop/tensor_descriptor.h"
+#include "infiniop/ops/reduce_max.h"
+#include "infiniop/ops/equal.h"
 
 #endif // __INFINIOP_API_H__
