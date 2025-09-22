@@ -10,6 +10,7 @@
 #include "infiniop/ops/conv.h"
 #include "infiniop/ops/cross_entropy_loss.h"
 #include "infiniop/ops/dequantize.h"
+#include "infiniop/ops/div.h"
 #include "infiniop/ops/exp.h"
 #include "infiniop/ops/gemm.h"
 #include "infiniop/ops/hardswish.h"
@@ -18,11 +19,12 @@
 #include "infiniop/ops/mul.h"
 #include "infiniop/ops/random_sample.h"
 #include "infiniop/ops/rearrange.h"
+#include "infiniop/ops/reduce_max.h"
 #include "infiniop/ops/relu.h"
 #include "infiniop/ops/rms_norm.h"
 #include "infiniop/ops/rope.h"
-#include "infiniop/ops/softplus.h"
 #include "infiniop/ops/sin.h"
+#include "infiniop/ops/softplus.h"
 #include "infiniop/ops/sub.h"
 #include "infiniop/ops/swiglu.h"
 #include "infiniop/ops/tanh.h"
@@ -31,5 +33,6 @@
 #include "infiniop/tensor_descriptor.h"
 #include "infiniop/ops/reduce_max.h"
 #include "infiniop/ops/batch_norm.h"
+#include "infiniop/ops/equal.h"
 
 #endif // __INFINIOP_API_H__
