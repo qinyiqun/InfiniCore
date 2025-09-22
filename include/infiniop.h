@@ -15,6 +15,8 @@
 #include "infiniop/ops/gemm.h"
 #include "infiniop/ops/hardswish.h"
 #include "infiniop/ops/interpolate_nearest.h"
+#include "infiniop/ops/logical_and.h"
+#include "infiniop/ops/logical_or.h"
 #include "infiniop/ops/maxpool.h"
 #include "infiniop/ops/maxpool_backward.h"
 #include "infiniop/ops/mul.h"
@@ -32,5 +34,12 @@
 #include "infiniop/ops/topkrouter.h"
 #include "infiniop/ops/where.h"
 #include "infiniop/tensor_descriptor.h"
+#include "infiniop/ops/reduce_max.h"
+#include "infiniop/ops/layer_norm.h"
+#include "infiniop/ops/index_copy_inplace.h"
+#include "infiniop/ops/gather.h"
+#include "infiniop/ops/scatter.h"
+#include "infiniop/ops/batch_norm.h"
+#include "infiniop/ops/equal.h"
 
 #endif // __INFINIOP_API_H__
