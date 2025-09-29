@@ -26,6 +26,7 @@ DECLARE_INFINIOP_TEST(sin)
 DECLARE_INFINIOP_TEST(exp)
 DECLARE_INFINIOP_TEST(averagepool)
 DECLARE_INFINIOP_TEST(cross_entropy_loss)
+DECLARE_INFINIOP_TEST(maxpool_backward)
 DECLARE_INFINIOP_TEST(logical_and)
 DECLARE_INFINIOP_TEST(logical_or)
 DECLARE_INFINIOP_TEST(layer_norm)
@@ -74,6 +75,7 @@ DECLARE_INFINIOP_TEST(equal)
         REGISTER_INFINIOP_TEST(batch_norm)          \
         REGISTER_INFINIOP_TEST(equal)               \
         REGISTER_INFINIOP_TEST(div)                 \
+        REGISTER_INFINIOP_TEST(maxpool_backward)    \
     }
 
 namespace infiniop_test {
