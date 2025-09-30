@@ -41,5 +41,6 @@
 #include "infiniop/ops/batch_norm.h"
 #include "infiniop/ops/equal.h"
 #include "infiniop/ops/reduce_mean.h"
+#include "infiniop/ops/cos.h"
 
 #endif // __INFINIOP_API_H__

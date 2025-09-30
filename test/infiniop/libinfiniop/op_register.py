@@ -1252,3 +1252,25 @@ def reduce_mean_(lib):
     lib.infiniopDestroyReduceMeanDescriptor.argtypes = [
         infiniopOperatorDescriptor_t,
     ]
+
+
+@OpRegister.operator
+def cos_(lib):
+    lib.infiniopCreateCosDescriptor.restype = c_int32
+    lib.infiniopCreateCosDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+    ]
+    lib.infiniopCos.restype = c_int32
+    lib.infiniopCos.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+    lib.infiniopDestroyCosDescriptor.restype = c_int32
+    lib.infiniopDestroyCosDescriptor.argtypes = [infiniopOperatorDescriptor_t]
