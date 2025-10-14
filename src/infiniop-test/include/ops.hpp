@@ -26,6 +26,7 @@ DECLARE_INFINIOP_TEST(sin)
 DECLARE_INFINIOP_TEST(exp)
 DECLARE_INFINIOP_TEST(averagepool)
 DECLARE_INFINIOP_TEST(cross_entropy_loss)
+DECLARE_INFINIOP_TEST(averagepool_backward)
 DECLARE_INFINIOP_TEST(logical_and)
 DECLARE_INFINIOP_TEST(logical_or)
 DECLARE_INFINIOP_TEST(layer_norm)
@@ -48,32 +49,33 @@ DECLARE_INFINIOP_TEST(equal)
 /*
  * Register all the tests here
  */
-#define TEST_BUILDER_MAPPINGS                       \
-    {                                               \
-        REGISTER_INFINIOP_TEST(gemm)                \
-        REGISTER_INFINIOP_TEST(random_sample)       \
-        REGISTER_INFINIOP_TEST(add)                 \
-        REGISTER_INFINIOP_TEST(mul)                 \
-        REGISTER_INFINIOP_TEST(clip)                \
-        REGISTER_INFINIOP_TEST(swiglu)              \
-        REGISTER_INFINIOP_TEST(rope)                \
-        REGISTER_INFINIOP_TEST(rms_norm)            \
-        REGISTER_INFINIOP_TEST(causal_softmax)      \
-        REGISTER_INFINIOP_TEST(rearrange)           \
-        REGISTER_INFINIOP_TEST(sub)                 \
-        REGISTER_INFINIOP_TEST(averagepool)         \
-        REGISTER_INFINIOP_TEST(cross_entropy_loss)  \
-        REGISTER_INFINIOP_TEST(maxpool)             \
-        REGISTER_INFINIOP_TEST(interpolate_nearest) \
-        REGISTER_INFINIOP_TEST(logical_and)         \
-        REGISTER_INFINIOP_TEST(logical_or)          \
-        REGISTER_INFINIOP_TEST(layer_norm)          \
-        REGISTER_INFINIOP_TEST(index_copy_inplace)  \
-        REGISTER_INFINIOP_TEST(gather)              \
-        REGISTER_INFINIOP_TEST(scatter)             \
-        REGISTER_INFINIOP_TEST(batch_norm)          \
-        REGISTER_INFINIOP_TEST(equal)               \
-        REGISTER_INFINIOP_TEST(div)                 \
+#define TEST_BUILDER_MAPPINGS                        \
+    {                                                \
+        REGISTER_INFINIOP_TEST(gemm)                 \
+        REGISTER_INFINIOP_TEST(random_sample)        \
+        REGISTER_INFINIOP_TEST(add)                  \
+        REGISTER_INFINIOP_TEST(mul)                  \
+        REGISTER_INFINIOP_TEST(clip)                 \
+        REGISTER_INFINIOP_TEST(swiglu)               \
+        REGISTER_INFINIOP_TEST(rope)                 \
+        REGISTER_INFINIOP_TEST(rms_norm)             \
+        REGISTER_INFINIOP_TEST(causal_softmax)       \
+        REGISTER_INFINIOP_TEST(rearrange)            \
+        REGISTER_INFINIOP_TEST(sub)                  \
+        REGISTER_INFINIOP_TEST(averagepool)          \
+        REGISTER_INFINIOP_TEST(cross_entropy_loss)   \
+        REGISTER_INFINIOP_TEST(maxpool)              \
+        REGISTER_INFINIOP_TEST(interpolate_nearest)  \
+        REGISTER_INFINIOP_TEST(div)                  \
+        REGISTER_INFINIOP_TEST(averagepool_backward) \
+        REGISTER_INFINIOP_TEST(logical_and)          \
+        REGISTER_INFINIOP_TEST(logical_or)           \
+        REGISTER_INFINIOP_TEST(layer_norm)           \
+        REGISTER_INFINIOP_TEST(index_copy_inplace)   \
+        REGISTER_INFINIOP_TEST(gather)               \
+        REGISTER_INFINIOP_TEST(scatter)              \
+        REGISTER_INFINIOP_TEST(batch_norm)           \
+        REGISTER_INFINIOP_TEST(equal)                \
     }
 
 namespace infiniop_test {

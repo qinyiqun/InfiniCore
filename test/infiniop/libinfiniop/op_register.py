@@ -953,6 +953,43 @@ def div_(lib):
     lib.infiniopDestroyDivDescriptor.argtypes = [
         infiniopOperatorDescriptor_t,
     ]
+
+@OpRegister.operator
+def avg_pool_backward_(lib):
+    lib.infiniopCreateAvgPoolBackwardDescriptor.restype = c_int32
+    lib.infiniopCreateAvgPoolBackwardDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,  # grad_input_desc
+        infiniopTensorDescriptor_t,  # grad_output_desc
+        infiniopTensorDescriptor_t,  # input_desc
+        c_void_p,  # kernel_size
+        c_void_p,  # strides
+        c_void_p,  # pads
+        c_bool,  # ceil_mode
+    ]
+
+    lib.infiniopGetAvgPoolBackwardWorkspaceSize.restype = c_int32
+    lib.infiniopGetAvgPoolBackwardWorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]
+
+    lib.infiniopAvgPoolBackward.restype = c_int32
+    lib.infiniopAvgPoolBackward.argtypes = [
+        infiniopOperatorDescriptor_t,  # descriptor
+        c_void_p,  # workspace
+        c_size_t,  # workspace_size
+        c_void_p,  # grad_input
+        c_void_p,  # grad_output
+        c_void_p,  # input
+        c_void_p,  # stream
+    ]
+
+    lib.infiniopDestroyAvgPoolBackwardDescriptor.restype = c_int32
+    lib.infiniopDestroyAvgPoolBackwardDescriptor.argtypes = [
+        infiniopOperatorDescriptor_t,
+    ]
       
 @OpRegister.operator
 def equal_(lib):
