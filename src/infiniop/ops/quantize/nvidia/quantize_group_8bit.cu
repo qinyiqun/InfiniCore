@@ -44,24 +44,7 @@ Descriptor::calculate(void *workspace,
                       bool scale_ue8m0,
                       void *stream) const {
     auto cuda_stream = reinterpret_cast<cudaStream_t>(stream);
-
-
-      //   CHECK_INPUT(input);
-  //   CHECK_INPUT(output_q);
-
-  // 需要一个值，要的是input的大小(x * y * z)
-  // 需要 out_q.dtype  out_s.stride
-  // input.size input.dim
-  //
-    // const int num_groups = input.numel() / group_size;
-    // auto input1 =  _info.input();
     const int num_groups = _info.input()->numel() / group_size;
-
-    // CHECK_EQ(input.numel() % group_size, 0);
-    // CHECK_EQ(output_s.dim(), 2);
-
-  // cudaStream_t stream = at::cuda::getCurrentCUDAStream();
-
     constexpr int THREADS_PER_GROUP = 16;
 
     int groups_per_block = 1;
@@ -76,17 +59,13 @@ Descriptor::calculate(void *workspace,
         groups_per_block = 2;
     }
 
-    // auto dst_type = output_q.scalar_type();
     auto dst_type = _info.output_q()->dtype();
     const int num_blocks = num_groups / groups_per_block;
     const int num_threads = groups_per_block * THREADS_PER_GROUP;
 
-    // const bool is_column_major = output_s.stride(0) < output_s.stride(1);
     const bool is_column_major = _info.output_s()->stride(0) < _info.output_s()->stride(1);
-    // const int hidden_dim =input.size(input.dim() - 1);
     const int hidden_dim = _info.input()->shape()[_info.input()->ndim() - 1];
     const int num_groups_per_row = hidden_dim / group_size;
-    // const int scale_stride = output_s.stride(1);
     const int scale_stride = _info.output_s()->stride(1);
 #define LAUNCH_KERNEL(T, DST_DTYPE)                                            \
     do {                                                                         \
@@ -118,30 +97,12 @@ Descriptor::calculate(void *workspace,
                 (float)max_8bit);                                                \
         }                                                                          \
     } while (0)
-    // DISPATCH_PYTORCH_DTYPE_TO_CTYPE_FLOAT_FP16(
-    //     input.scalar_type(), scalar_t, [&] {
-    //     if (dst_type == at::ScalarType::Char) {
-    //         LAUNCH_KERNEL(scalar_t, int8_t);
-    //         return true;
-    //     } else if (dst_type == at::ScalarType::Float8_e4m3fn) {
-    //         LAUNCH_KERNEL(scalar_t, __nv_fp8_e4m3);
-    //         return true;
-    //     }
-    //     return false;
-    // });
 
     if (_info.input()->dtype() == INFINI_DTYPE_F16 && _dtype == INFINI_DTYPE_F8_E4M3)
     switch (_dtype) {
         case INFINI_DTYPE_F8_E4M3:
             LAUNCH_KERNEL(half, __nv_fp8_e4m3);
-            // sgl_per_token_group_quant_int8(input, output_q, output_s, group_size, eps, min_8bit, max_8bit, cuda_stream);
             break;
-        // case INFINI_DTYPE_F8_E4M3:
-        //     // sgl_per_token_group_quant_fp8(input, output_q, output_s, group_size, eps, min_8bit, max_8bit, false, cuda_stream);
-        //     break;
-        // case INFINI_DTYPE_F8_UE8M0:
-            // sgl_per_token_group_quant_fp8(input, output_q, output_s, group_size, eps, min_8bit, max_8bit, true, cuda_stream);
-            // break;
         default:
             return INFINI_STATUS_BAD_TENSOR_DTYPE;
     }

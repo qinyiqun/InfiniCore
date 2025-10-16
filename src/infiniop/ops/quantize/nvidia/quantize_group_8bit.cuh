@@ -67,14 +67,11 @@ __global__ void per_token_group_quant_8bit_kernel(
     }
 
     constexpr uint32_t vec_size = 16 / sizeof(T);
-    // using vec_t = flashinfer::vec_t<T, vec_size>;
 
     const int32_t num_vec_elems = group_size / vec_size;
 
     for (int32_t i = lane_id; i < num_vec_elems; i += 16) {
-        // vec_t input_vec;
         T* input_vec = new T[vec_size];
-        // input_vec.cast_load(group_input + i * vec_size);
         for(int j=0; j<vec_size; j++){
             input_vec[j] = *(group_input + i*vec_size + j);
         }
@@ -108,10 +105,7 @@ __global__ void per_token_group_quant_8bit_kernel(
     }
 
     for (int32_t i = lane_id; i < num_vec_elems; i += 16) {
-        // vec_t input_vec;
-        // input_vec.cast_load(group_input + i * vec_size);
         T* input_vec = new T[vec_size];
-        // input_vec.cast_load(group_input + i * vec_size);
         for(int j=0; j<vec_size; j++){
             input_vec[j] = *(group_input + i*vec_size + j);
         }

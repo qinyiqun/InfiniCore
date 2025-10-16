@@ -148,8 +148,11 @@ def test(
                 None,
                 d.data(),
                 None,
+                False,
+                False,
+                False,
                 workspace.data(),
-                workspace_size.value,
+                0,
                 None,
             )
         )
@@ -161,7 +164,6 @@ def test(
     
     if DEBUG:
         debug(c.actual_tensor(), ans.torch_tensor(), atol=atol, rtol=rtol)
-
     assert torch.allclose(d.actual_tensor(), ans.torch_tensor(), atol=atol, rtol=rtol)
 
     # Profiling workflow
