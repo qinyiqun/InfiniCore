@@ -5,6 +5,8 @@
 #include "../pool.h"
 #include "nvidia_handle.h"
 #include <cublas_v2.h>
+#include <cuda.h>
+#include <cuda_fp8.h>
 #include <functional>
 
 #ifdef ENABLE_CUDNN_API
@@ -13,6 +15,11 @@
 
 #ifdef ENABLE_CUBLASLT_API
 #include <cublasLt.h>
+#if CUDA_VERSION >= 12090
+#define SUPPORT_FP8_BLOCKWISE_SCALE 1
+#else
+#define SUPPORT_FP8_BLOCKWISE_SCALE 0
+#endif
 #endif
 
 #define CHECK_CUBLAS(API) CHECK_INTERNAL(API, CUBLAS_STATUS_SUCCESS)
