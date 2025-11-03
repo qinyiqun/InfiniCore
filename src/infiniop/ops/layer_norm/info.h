@@ -17,6 +17,7 @@ public:
     size_t ndim;
     std::vector<size_t> input_shape;
     size_t normalized_size;
+    size_t othersize;
     std::vector<ptrdiff_t> output_strides;
     std::vector<ptrdiff_t> input_standardization_strides;
     std::vector<ptrdiff_t> input_std_deviation_strides;
@@ -39,9 +40,13 @@ public:
         //  ------------------------- start: check tensor shape and input validity -------------------------
         CHECK_SAME_SHAPE(
             output_desc->shape(), input_desc->shape(), input_standardization_desc->shape());
-        size_t batch_size = input_desc->dim(0),
-               channel_size = input_desc->dim(1),
-               feature_size = input_desc->dim(2);
+        size_t ndim = input_desc->ndim();
+        size_t normalized_size = input_desc->dim(ndim - 1);
+        size_t othersize = 1;
+        for (size_t i = 0; i < ndim - 1; i++) {
+            othersize *= input_desc->dim(i);
+        }
+        size_t feature_size = input_desc->dim(ndim - 1);
 
         bool bias_exist = bias_desc != nullptr;
         CHECK_OR_RETURN(
@@ -51,15 +56,21 @@ public:
             (weight_desc->ndim() == 1) && (weight_desc->dim(0) == feature_size),
             INFINI_STATUS_BAD_TENSOR_SHAPE);
         CHECK_OR_RETURN(
-            input_std_deviation_desc->ndim() == 2 && input_std_deviation_desc->dim(0) == batch_size && input_std_deviation_desc->dim(1) == channel_size,
+            input_std_deviation_desc->ndim() == ndim - 1,
             INFINI_STATUS_BAD_TENSOR_SHAPE);
+        for (size_t i = 0; i < ndim - 1; i++) {
+            CHECK_OR_RETURN(
+                input_std_deviation_desc->dim(i) == input_desc->dim(i),
+                INFINI_STATUS_BAD_TENSOR_SHAPE);
+        }
         //  -------------------------- end: check tensor shape and input validity --------------------------
         return utils::Result<LayerNormInfo>(LayerNormInfo{
             //  ------------------------------ start: create an instance of Info -------------------------------
             output_desc->dtype(),
-            input_desc->ndim(),
+            ndim,
             input_desc->shape(),
-            input_desc->dim(input_desc->ndim() - 1),
+            normalized_size,
+            othersize,
             output_desc->strides(),
             input_standardization_desc->strides(),
             input_std_deviation_desc->strides(),

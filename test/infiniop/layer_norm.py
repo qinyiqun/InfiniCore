@@ -21,6 +21,8 @@ from enum import Enum, auto
 
 _TEST_CASES_ = [
     # shape, bias_exist, eps, input_strides, output_strides, weight_strides
+    ((5, 4), True, 1e-5, None, None, None),
+    ((5, 4, 32, 2048), True, 1e-5, None, None, None),
     ((13, 4, 4), True, 1e-5, [30, 4, 1], [50, 4, 1], [2]),
     ((16, 5, 563), True, 1e-4, None, None, None),
     ((5, 16, 563), False, 1e-5, None, None, [10]),
@@ -96,7 +98,22 @@ def torch_layer_norm(
     input_std_deviation.copy_(std.type(input_standardization.dtype))
     output.copy_(ln(input).detach().type(output.dtype))
 
-
+def layer_norm(output:torch.Tensor,
+    input:torch.Tensor,
+    weight, bias, eps,
+    bias_exist: bool):
+    normalized_shape = input.shape[-1:]
+    ln = torch.nn.LayerNorm(
+        normalized_shape=normalized_shape,
+        eps=eps,
+        bias=bias_exist,
+        device=input.device
+    )
+    
+    ln.weight.data = weight
+    if bias_exist:
+        ln.bias.data = bias
+    output.copy_(ln.forward(input).detach().type(output.dtype))
 
 def test(
     handle,
@@ -136,6 +153,7 @@ def test(
         input_strides,
         dtype,
         device,
+        mode = "zeros"
     )
     if inplace == Inplace.INPLACE:
         if output_strides != input_strides:
@@ -164,10 +182,18 @@ def test(
         device,
     ) if bias_exist else None
 
-    torch_layer_norm(
+    # torch_layer_norm(
+    #     output.torch_tensor(),
+    #     input_standardization.torch_tensor(),
+    #     input_std_deviation.torch_tensor(),
+    #     input.torch_tensor(),
+    #     weight.torch_tensor(),
+    #     bias.torch_tensor() if bias_exist else None,
+    #     eps,
+    #     bias_exist
+    # )
+    layer_norm(
         output.torch_tensor(),
-        input_standardization.torch_tensor(),
-        input_std_deviation.torch_tensor(),
         input.torch_tensor(),
         weight.torch_tensor(),
         bias.torch_tensor() if bias_exist else None,
