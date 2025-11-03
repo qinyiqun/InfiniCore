@@ -1,6 +1,6 @@
 #ifndef __INFINIOP_REDUCE_CUDA_H__
 #define __INFINIOP_REDUCE_CUDA_H__
-
+#include <cub/block/block_reduce.cuh>
 /*
  * Device functions for reduction operations on CUDA.
  *
@@ -63,8 +63,7 @@ __device__ __forceinline__ Tdata max(const Tdata *data_ptr, size_t count) {
     __shared__ typename BlockReduce::TempStorage temp_storage;
 
 #ifdef ENABLE_HYGON_API
-    return BlockReduce(temp_storage).Reduce(
-        max_, [](const Tdata &a, const Tdata &b) { return (a > b) ? a : b; }, BLOCK_SIZE);
+    return BlockReduce(temp_storage).Reduce(max_, [](const Tdata &a, const Tdata &b) { return (a > b) ? a : b; }, BLOCK_SIZE);
 #else
     return BlockReduce(temp_storage).Reduce(max_, cub::Max(), BLOCK_SIZE);
 #endif
