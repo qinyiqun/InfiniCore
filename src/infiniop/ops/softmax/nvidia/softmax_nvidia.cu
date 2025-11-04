@@ -59,10 +59,20 @@ infiniStatus_t launchKernel(void *y, const void *x, infiniDtype_t dtype,
             blockSoftmax<half, BLOCK_SIZE>
                 <<<num_blocks, BLOCK_SIZE, 0, stream>>>((half *)y, (const half *)x,
                                                         dimsize, stride);
-        } else {
+        } else if (dimsize > 31) {
             constexpr unsigned int BLOCK_SIZE_x = 32;
             constexpr unsigned int BLOCK_SIZE_y = 32;
             constexpr int numPerThreadx = 32;
+            int num_block_x = (num_blocks + BLOCK_SIZE_y - 1) / BLOCK_SIZE_y;
+            dim3 block_dim(BLOCK_SIZE_x, BLOCK_SIZE_y, 1);
+            dim3 grid_dim(num_block_x, 1, 1);
+            warpSoftmax<half, BLOCK_SIZE_x, BLOCK_SIZE_y, numPerThreadx>
+                <<<grid_dim, block_dim, 0, stream>>>((half *)y, (const half *)x,
+                                                     othersize, dimsize, stride);
+        } else {
+            constexpr unsigned int BLOCK_SIZE_x = 16;
+            constexpr unsigned int BLOCK_SIZE_y = 64;
+            constexpr int numPerThreadx = 2;
             int num_block_x = (num_blocks + BLOCK_SIZE_y - 1) / BLOCK_SIZE_y;
             dim3 block_dim(BLOCK_SIZE_x, BLOCK_SIZE_y, 1);
             dim3 grid_dim(num_block_x, 1, 1);
@@ -76,10 +86,20 @@ infiniStatus_t launchKernel(void *y, const void *x, infiniDtype_t dtype,
             blockSoftmax<float, BLOCK_SIZE>
                 <<<num_blocks, BLOCK_SIZE, 0, stream>>>((float *)y, (const float *)x,
                                                         dimsize, stride);
-        } else {
+        } else if (dimsize > 31) { // 稍微细分一下，否则登临机器测试(12,16,512,512),axis=0的时候寄存器资源不够用
             constexpr unsigned int BLOCK_SIZE_x = 32;
             constexpr unsigned int BLOCK_SIZE_y = 32;
             constexpr int numPerThreadx = 32;
+            int num_block_x = (num_blocks + BLOCK_SIZE_y - 1) / BLOCK_SIZE_y;
+            dim3 block_dim(BLOCK_SIZE_x, BLOCK_SIZE_y, 1);
+            dim3 grid_dim(num_block_x, 1, 1);
+            warpSoftmax<float, BLOCK_SIZE_x, BLOCK_SIZE_y, numPerThreadx>
+                <<<grid_dim, block_dim, 0, stream>>>((float *)y, (const float *)x,
+                                                     othersize, dimsize, stride);
+        } else {
+            constexpr unsigned int BLOCK_SIZE_x = 16;
+            constexpr unsigned int BLOCK_SIZE_y = 64;
+            constexpr int numPerThreadx = 2;
             int num_block_x = (num_blocks + BLOCK_SIZE_y - 1) / BLOCK_SIZE_y;
             dim3 block_dim(BLOCK_SIZE_x, BLOCK_SIZE_y, 1);
             dim3 grid_dim(num_block_x, 1, 1);
