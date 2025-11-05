@@ -99,7 +99,7 @@ def test(
         f"dtype:{InfiniDtypeNames[dtype]} inplace:{inplace}"
     )
 
-    new_tensor = torch.nn.functional.gelu(input.torch_tensor(), approximate="tanh")
+    new_tensor = torch.nn.functional.gelu(input.torch_tensor())
     output.update_torch_tensor(new_tensor)
 
     if sync is not None:
