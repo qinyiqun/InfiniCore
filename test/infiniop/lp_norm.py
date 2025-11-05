@@ -24,24 +24,25 @@ from enum import Enum, auto
 # ==============================================================================
 # These are not meant to be imported from other modules
 _TEST_CASES_ = [
-    # shape, axis
-    ((4, 4), 0), 
-    ((12, 16, 512, 512), 0), 
-    ((12, 16, 512, 512), 1), 
-    ((12, 16, 512, 512), 2), 
-    ((12, 16, 512, 512), 3), 
-    ((1, 16, 512, 512), 0),
-    ((1, 16, 512, 512), 1),
-    ((1, 16, 512, 512), 2),
-    ((1, 16, 512, 512), 3), 
+    # shape, axis, p, eps
+    ((4, 4), 0, 1, 1e-12), 
+    ((12, 16, 512, 512), 0, 2, 1e-12), 
+    ((12, 16, 512, 512), 1, 2, 1e-12), 
+    ((12, 16, 512, 512), 2, 1, 1e-12), 
+    ((12, 16, 512, 512), 3, 2, 1e-12), 
+    ((1, 16, 512, 512), 0, 2, 1e-12),
+    ((1, 16, 512, 512), 1, 1, 1e-12),
+    ((1, 16, 512, 512), 2, 2, 1e-12),
+    ((1, 16, 512, 512), 3, 2, 1e-12), 
 ]
 
 # Data types used for testing
-_TENSOR_DTYPES = [InfiniDtype.F16, InfiniDtype.F32]
+_TENSOR_DTYPES = [InfiniDtype.BF16, InfiniDtype.F16, InfiniDtype.F32]
 
 # Tolerance map for different data types
 _TOLERANCE_MAP = {
     InfiniDtype.F16: {"atol": 1e-3, "rtol": 1e-2},
+    InfiniDtype.BF16: {"atol": 1e-3, "rtol": 1e-2},
     InfiniDtype.F32: {"atol": 3e-5, "rtol": 1e-5},
 }
 
@@ -68,8 +69,8 @@ NUM_PRERUN = 10
 NUM_ITERATIONS = 1000
 
 
-def softmax(x, axis):
-    return torch.softmax(x, axis)
+def lp_norm(x, axis, p, eps):
+    return torch.nn.functional.normalize(x.to(torch.float32),dim=axis, p=p, eps=eps).to(x.dtype)
 
 
 def test(
@@ -77,16 +78,18 @@ def test(
     device,
     shape,
     axis,
+    p,
+    eps,
     inplace=Inplace.OUT_OF_PLACE,
     dtype=InfiniDtype.F16,
     sync=None,
 ):
     print(
-        f"Testing Softmax on {InfiniDeviceNames[device]} with shape:{shape}, axis:{axis} dtype:{InfiniDtypeNames[dtype]} inplace:{inplace}"
+        f"Testing LPNorm on {InfiniDeviceNames[device]} with shape:{shape}, axis:{axis}, p:{p}, eps:{eps} dtype:{InfiniDtypeNames[dtype]} inplace:{inplace}"
     )
 
     x = TestTensor(shape, None, dtype, device)
-    ans = softmax(x.torch_tensor(), axis)
+    ans = lp_norm(x.torch_tensor(), axis, p, eps)
     
     if inplace == Inplace.INPLACE_X:
         y = x
@@ -98,8 +101,8 @@ def test(
 
     descriptor = infiniopOperatorDescriptor_t()
     check_error(
-        LIBINFINIOP.infiniopCreateSoftmaxDescriptor(
-            handle, ctypes.byref(descriptor), y.descriptor, x.descriptor, axis
+        LIBINFINIOP.infiniopCreateLPNormDescriptor(
+            handle, ctypes.byref(descriptor), y.descriptor, x.descriptor, axis, p, ctypes.c_float(eps)
         )
     )
 
@@ -109,15 +112,15 @@ def test(
 
     workspace_size = c_uint64(0)
     check_error(
-        LIBINFINIOP.infiniopGetSoftmaxWorkspaceSize(
+        LIBINFINIOP.infiniopGetLPNormWorkspaceSize(
             descriptor, ctypes.byref(workspace_size)
         )
     )
     workspace = TestWorkspace(workspace_size.value, x.device)
 
-    def lib_softmax():
+    def lib_lp_norm():
         check_error(
-            LIBINFINIOP.infiniopSoftmax(
+            LIBINFINIOP.infiniopLPNorm(
                 descriptor,
                 workspace.data(),
                 workspace_size.value,
@@ -127,11 +130,11 @@ def test(
             )
         )
 
-    lib_softmax()
+    lib_lp_norm()
 
     if sync is not None:
         sync()
-
+   
     atol, rtol = get_tolerance(_TOLERANCE_MAP, dtype)
     if DEBUG:
         debug(y.actual_tensor(), ans, atol=atol, rtol=rtol)
@@ -140,11 +143,11 @@ def test(
     # Profiling workflow
     if PROFILE:
         # fmt: off
-        profile_operation("PyTorch", lambda: softmax(x.torch_tensor(), axis), device, NUM_PRERUN, NUM_ITERATIONS)
-        profile_operation("    lib", lambda: lib_softmax(), device, NUM_PRERUN, NUM_ITERATIONS)
+        profile_operation("PyTorch", lambda: lp_norm(x.torch_tensor(), axis, p, eps), device, NUM_PRERUN, NUM_ITERATIONS)
+        profile_operation("    lib", lambda: lib_lp_norm(), device, NUM_PRERUN, NUM_ITERATIONS)
         # fmt: on
 
-    check_error(LIBINFINIOP.infiniopDestroySoftmaxDescriptor(descriptor))
+    check_error(LIBINFINIOP.infiniopDestroyLPNormDescriptor(descriptor))
 
 
 if __name__ == "__main__":

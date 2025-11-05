@@ -838,6 +838,38 @@ def layer_norm_(lib):
     lib.infiniopDestroyLayerNormDescriptor.argtypes = [infiniopOperatorDescriptor_t]
 
 
+@OpRegister.operator
+def lp_norm_(lib):
+    lib.infiniopCreateLPNormDescriptor.restype = c_int32
+    lib.infiniopCreateLPNormDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        c_int32,
+    ]
+
+    lib.infiniopGetLPNormWorkspaceSize.restype = c_int32
+    lib.infiniopGetLPNormWorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]
+
+    lib.infiniopLPNorm.restype = c_int32
+    lib.infiniopLPNorm.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+
+    lib.infiniopDestroyLPNormDescriptor.restype = c_int32
+    lib.infiniopDestroyLPNormDescriptor.argtypes = [
+        infiniopOperatorDescriptor_t,
+    ]
+
 @OpRegister.operator     
 def tanh_(lib):
     lib.infiniopCreateTanhDescriptor.restype = c_int32
