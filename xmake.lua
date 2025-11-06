@@ -50,10 +50,10 @@ option("nv-gpu")
     set_showmenu(true)
     set_description("Whether to compile implementations for Nvidia GPU")
 option_end()
-local is_tenglin = os.isfile("/home/qy/Desktop/sdk/sdk/bin/dlcc")
+local is_qy = os.isfile("/home/qy/Desktop/sdk/sdk/bin/dlcc")
 if has_config("nv-gpu") then
     add_defines("ENABLE_NVIDIA_API")
-    if is_tenglin then
+    if is_qy then
         includes("xmake/qy.lua")
     else
         includes("xmake/nvidia.lua")
@@ -207,7 +207,7 @@ target("infinirt")
     end
     if has_config("nv-gpu") then
         add_deps("infinirt-nvidia")
-        if is_tenglin then
+        if is_qy then
             add_files("build/.objs/infinirt-nvidia/rules/qy.cuda/src/infinirt/cuda/*.cu.o", {public = true})
         end
         
@@ -248,7 +248,7 @@ target("infiniop")
     end
     if has_config("nv-gpu") then
         add_deps("infiniop-nvidia")
-        if is_tenglin then
+        if is_qy then
             add_files("build/.objs/infiniop-nvidia/rules/qy.cuda/src/infiniop/ops/*/nvidia/*.cu.o", {public = true})
             add_files("build/.objs/infiniop-nvidia/rules/qy.cuda/src/infiniop/devices/nvidia/*.cu.o", {public = true})
         end
