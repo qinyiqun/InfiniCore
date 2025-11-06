@@ -847,6 +847,8 @@ def lp_norm_(lib):
         infiniopTensorDescriptor_t,
         infiniopTensorDescriptor_t,
         c_int32,
+        c_int32,
+        c_float,
     ]
 
     lib.infiniopGetLPNormWorkspaceSize.restype = c_int32

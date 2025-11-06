@@ -102,7 +102,7 @@ def test(
     descriptor = infiniopOperatorDescriptor_t()
     check_error(
         LIBINFINIOP.infiniopCreateLPNormDescriptor(
-            handle, ctypes.byref(descriptor), y.descriptor, x.descriptor, axis, p, ctypes.c_float(eps)
+            handle, ctypes.byref(descriptor), y.descriptor, x.descriptor, axis, p, eps
         )
     )
 
