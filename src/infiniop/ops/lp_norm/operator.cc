@@ -2,7 +2,7 @@
 #include "../../handle.h"
 #include "infiniop/ops/lp_norm.h"
 
-#if defined(ENABLE_NVIDIA_API) || defined(ENABLE_ILUVATAR_API)
+#if defined(ENABLE_NVIDIA_API) || defined(ENABLE_ILUVATAR_API) || defined(ENABLE_QY_API)
 #include "nvidia/lp_norm_nvidia.cuh"
 #endif
 
@@ -33,6 +33,9 @@ __C infiniStatus_t infiniopCreateLPNormDescriptor(
 #ifdef ENABLE_ILUVATAR_API
         CREATE(INFINI_DEVICE_ILUVATAR, nvidia);
 #endif
+#ifdef ENABLE_QY_API
+        CREATE(INFINI_DEVICE_QY, nvidia);
+#endif
 
     default:
         return INFINI_STATUS_DEVICE_TYPE_NOT_SUPPORTED;
@@ -53,6 +56,9 @@ __C infiniStatus_t infiniopGetLPNormWorkspaceSize(infiniopLPNormDescriptor_t des
 #endif
 #ifdef ENABLE_ILUVATAR_API
         GET(INFINI_DEVICE_ILUVATAR, nvidia);
+#endif
+#ifdef ENABLE_QY_API
+        GET(INFINI_DEVICE_QY, nvidia);
 #endif
 
     default:
@@ -88,6 +94,9 @@ __C infiniStatus_t infiniopLPNorm(
 #ifdef ENABLE_ILUVATAR_API
         CALCULATE(INFINI_DEVICE_ILUVATAR, nvidia);
 #endif
+#ifdef ENABLE_QY_API
+        CALCULATE(INFINI_DEVICE_QY, nvidia);
+#endif
 
     default:
         return INFINI_STATUS_DEVICE_TYPE_NOT_SUPPORTED;
@@ -111,6 +120,9 @@ infiniopDestroyLPNormDescriptor(infiniopLPNormDescriptor_t desc) {
 #endif
 #ifdef ENABLE_ILUVATAR_API
         DELETE(INFINI_DEVICE_ILUVATAR, nvidia);
+#endif
+#ifdef ENABLE_QY_API
+        DELETE(INFINI_DEVICE_QY, nvidia);
 #endif
 
     default:

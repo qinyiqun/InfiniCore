@@ -3,8 +3,8 @@ if CUDNN_ROOT ~= nil then
     add_includedirs(CUDNN_ROOT .. "/include")
 end
 
-add_includedirs("/home/qy/Desktop/sdk/sdk/include", "../include")
-add_linkdirs("/home/qy/Desktop/sdk/sdk/lib")
+add_includedirs("/usr/local/denglin/sdk/include", "../include")
+add_linkdirs("/usr/local/denglin/sdk/lib")
 add_links("curt", "cublas", "cudnn")
 set_languages("cxx17")
 add_cxxflags("-std=c++17")  -- 显式设置 C++17
@@ -20,7 +20,7 @@ rule("qy.cuda")
     local qy_objfiles = {}
 
     on_load(function (target)
-        target:add("includedirs", "/home/qy/Desktop/sdk/sdk/include")
+        target:add("includedirs", "/usr/local/denglin/sdk/include")
     end)
 
     after_load(function (target)
@@ -40,8 +40,8 @@ rule("qy.cuda")
         import("core.project.config")
         import("core.base.option")
 
-        local dlcc = "/home/qy/Desktop/sdk/sdk/bin/dlcc"
-        local sdk_path = "/home/qy/Desktop/sdk/sdk"
+        local dlcc = "/usr/local/denglin/sdk/bin/dlcc"
+        local sdk_path = "/usr/local/denglin/sdk"
         local arch = "dlgput64"
 
         local relpath = path.relative(sourcefile, project.directory())
@@ -69,7 +69,7 @@ rule("qy.cuda")
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.dlcu %s", relpath)
         batchcmds:vrunv(dlcc, argv)
     end)
-target("infiniop-nvidia")
+target("infiniop-qy")
     set_kind("static")
     add_deps("infini-utils")
     on_install(function (target) end)
@@ -105,7 +105,7 @@ target("infiniop-nvidia")
     end
 target_end()
 
-target("infinirt-nvidia")
+target("infinirt-qy")
     set_kind("static")
     add_deps("infini-utils")
     on_install(function (target) end)
@@ -123,7 +123,7 @@ target("infinirt-nvidia")
     add_files("../src/infinirt/cuda/*.cu")
 target_end()
 
-target("infiniccl-nvidia")
+target("infiniccl-qy")
     set_kind("static")
     add_deps("infinirt")
     on_install(function (target) end)
