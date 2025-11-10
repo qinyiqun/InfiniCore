@@ -25,15 +25,15 @@ from enum import Enum, auto
 # These are not meant to be imported from other modules
 _TEST_CASES_ = [
     # shape, axis, p, eps
-    ((4, 4), 0, 1, 1e-12), 
-    ((12, 16, 512, 512), 0, 2, 1e-12), 
-    ((12, 16, 512, 512), 1, 2, 1e-12), 
-    ((12, 16, 512, 512), 2, 1, 1e-12), 
-    ((12, 16, 512, 512), 3, 2, 1e-12), 
+    ((4, 4), 0, 1, 1e-12),
+    ((12, 16, 512, 512), 0, 2, 1e-12),
+    ((12, 16, 512, 512), 1, 2, 1e-12),
+    ((12, 16, 512, 512), 2, 1, 1e-12),
+    ((12, 16, 512, 512), 3, 2, 1e-12),
     ((1, 16, 512, 512), 0, 2, 1e-12),
     ((1, 16, 512, 512), 1, 1, 1e-12),
     ((1, 16, 512, 512), 2, 2, 1e-12),
-    ((1, 16, 512, 512), 3, 2, 1e-12), 
+    ((1, 16, 512, 512), 3, 2, 1e-12),
 ]
 
 # Data types used for testing
@@ -70,7 +70,9 @@ NUM_ITERATIONS = 1000
 
 
 def lp_norm(x, axis, p, eps):
-    return torch.nn.functional.normalize(x.to(torch.float32),dim=axis, p=p, eps=eps).to(x.dtype)
+    return torch.nn.functional.normalize(
+        x.to(torch.float32), dim=axis, p=p, eps=eps
+    ).to(x.dtype)
 
 
 def test(
@@ -90,7 +92,7 @@ def test(
 
     x = TestTensor(shape, None, dtype, device)
     ans = lp_norm(x.torch_tensor(), axis, p, eps)
-    
+
     if inplace == Inplace.INPLACE_X:
         y = x
     else:
@@ -134,7 +136,7 @@ def test(
 
     if sync is not None:
         sync()
-   
+
     atol, rtol = get_tolerance(_TOLERANCE_MAP, dtype)
     if DEBUG:
         debug(y.actual_tensor(), ans, atol=atol, rtol=rtol)

@@ -6,16 +6,16 @@
 
 #define DESCRIPTOR(NAMESPACE)                                    \
                                                                  \
-    namespace op::softmax::NAMESPACE {                    \
+    namespace op::softmax::NAMESPACE {                           \
     class Descriptor final : public InfiniopDescriptor {         \
         struct Opaque;                                           \
         Opaque *_opaque;                                         \
-        SoftmaxInfo _info;                                 \
+        SoftmaxInfo _info;                                       \
         size_t _workspace_size;                                  \
                                                                  \
         Descriptor(                                              \
             Opaque *opaque,                                      \
-            SoftmaxInfo info,                              \
+            SoftmaxInfo info,                                    \
             size_t workspace_size,                               \
             infiniDevice_t device_type,                          \
             int device_id)                                       \

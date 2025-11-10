@@ -4,7 +4,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .. import InfiniopTestWriter, InfiniopTestCase, np_dtype_to_ggml, gguf_strides, contiguous_gguf_strides
+from .. import (
+    InfiniopTestWriter,
+    InfiniopTestCase,
+    np_dtype_to_ggml,
+    gguf_strides,
+    contiguous_gguf_strides,
+)
 
 
 def random_tensor(shape: tuple, dtype: np.dtype) -> np.ndarray:
@@ -22,24 +28,27 @@ def torch_Topksoftmax(router_logits, top_k: int, norm_topk_prob: bool):
 
 def python_Topksoftmax(router_logits, top_k: int, norm_topk_prob: bool):
     router_logits = torch.from_numpy(router_logits)
-    lable_values, lable_indices = torch_Topksoftmax(router_logits, top_k, norm_topk_prob)
+    lable_values, lable_indices = torch_Topksoftmax(
+        router_logits, top_k, norm_topk_prob
+    )
     return lable_values.numpy(), lable_indices.numpy()
 
 
 class TopksoftmaxTestCase(InfiniopTestCase):
-    def __init__(self,
-                 values: np.ndarray,  # 传出参数
-                 indices: np.ndarray,  # 传出参数
-                 x: np.ndarray,  # 传入参数
-                 topk: np.ndarray,
-                 norm: bool,
-                 values_shape: List[int] | None,
-                 values_strides: List[int] | None,
-                 indices_shape: List[int] | None,
-                 indices_strides: List[int] | None,
-                 x_shape: List[int] | None,
-                 x_strides: List[int] | None,
-                 ):
+    def __init__(
+        self,
+        values: np.ndarray,  # 传出参数
+        indices: np.ndarray,  # 传出参数
+        x: np.ndarray,  # 传入参数
+        topk: np.ndarray,
+        norm: bool,
+        values_shape: List[int] | None,
+        values_strides: List[int] | None,
+        indices_shape: List[int] | None,
+        indices_strides: List[int] | None,
+        x_shape: List[int] | None,
+        x_strides: List[int] | None,
+    ):
         super().__init__("topksoftmax")
         self.values = values
         self.indices = indices
@@ -59,41 +68,65 @@ class TopksoftmaxTestCase(InfiniopTestCase):
 
         if self.values_shape is not None:
             print("self.values_shape:  ", self.values_shape)
-            test_writer.add_array(test_writer.gguf_key("values.shape"), self.values_shape)
+            test_writer.add_array(
+                test_writer.gguf_key("values.shape"), self.values_shape
+            )
         if self.indices_shape is not None:
-            test_writer.add_array(test_writer.gguf_key("indices.shape"), self.indices_shape)
+            test_writer.add_array(
+                test_writer.gguf_key("indices.shape"), self.indices_shape
+            )
         if self.x_shape is not None:
             test_writer.add_array(test_writer.gguf_key("x.shape"), self.x_shape)
 
         if self.x_strides is not None:
-            test_writer.add_array(test_writer.gguf_key("x.strides"), gguf_strides(*self.x_strides))
+            test_writer.add_array(
+                test_writer.gguf_key("x.strides"), gguf_strides(*self.x_strides)
+            )
 
         test_writer.add_array(
             test_writer.gguf_key("values.strides"),
-            gguf_strides(*self.values_strides if self.values_strides is not None else contiguous_gguf_strides(self.values_shape))
+            gguf_strides(
+                *(
+                    self.values_strides
+                    if self.values_strides is not None
+                    else contiguous_gguf_strides(self.values_shape)
+                )
+            ),
         )
 
         test_writer.add_array(
             test_writer.gguf_key("indices.strides"),
-            gguf_strides(*self.indices_strides if self.indices_strides is not None else contiguous_gguf_strides(self.indices_shape))
+            gguf_strides(
+                *(
+                    self.indices_strides
+                    if self.indices_strides is not None
+                    else contiguous_gguf_strides(self.indices_shape)
+                )
+            ),
         )
 
-        test_writer.add_tensor(test_writer.gguf_key("values"),
-                               self.values,
-                               raw_dtype=np_dtype_to_ggml(self.values.dtype))
+        test_writer.add_tensor(
+            test_writer.gguf_key("values"),
+            self.values,
+            raw_dtype=np_dtype_to_ggml(self.values.dtype),
+        )
 
-        test_writer.add_tensor(test_writer.gguf_key("indices"),
-                               self.indices,
-                               raw_dtype=np_dtype_to_ggml(self.indices.dtype))
+        test_writer.add_tensor(
+            test_writer.gguf_key("indices"),
+            self.indices,
+            raw_dtype=np_dtype_to_ggml(self.indices.dtype),
+        )
 
-        test_writer.add_tensor(test_writer.gguf_key("x"),
-                               self.x,
-                               raw_dtype=np_dtype_to_ggml(self.x.dtype))
+        test_writer.add_tensor(
+            test_writer.gguf_key("x"), self.x, raw_dtype=np_dtype_to_ggml(self.x.dtype)
+        )
 
         test_writer.add_int32(test_writer.gguf_key("topk"), self.topk)
         test_writer.add_bool(test_writer.gguf_key("norm"), self.norm)
 
-        lable_values, lable_indices = python_Topksoftmax(self.x.copy(), self.topk, self.norm)
+        lable_values, lable_indices = python_Topksoftmax(
+            self.x.copy(), self.topk, self.norm
+        )
 
         test_writer.add_tensor(
             test_writer.gguf_key("lable_values"),
@@ -103,7 +136,7 @@ class TopksoftmaxTestCase(InfiniopTestCase):
         test_writer.add_tensor(
             test_writer.gguf_key("lable_indices"),
             lable_indices,
-            raw_dtype=np_dtype_to_ggml(lable_indices.dtype)
+            raw_dtype=np_dtype_to_ggml(lable_indices.dtype),
         )
 
 
@@ -115,7 +148,7 @@ if __name__ == "__main__":
         # x_shape, x_strides, topk, norm
         ((1, 32), None, 4, True),
         ((8, 20), None, 8, False),
-        ((2, 64), None, 6, True)
+        ((2, 64), None, 6, True),
     ]
     _TENSOR_DTYPES_ = [np.float32, np.float16]
     for dtype in _TENSOR_DTYPES_:
@@ -139,7 +172,7 @@ if __name__ == "__main__":
                 indices_shape=list(values_indices_shape),
                 indices_strides=None,
                 x_shape=list(x_shape),
-                x_strides=None
+                x_strides=None,
             )
 
             test_cases.append(test_case)

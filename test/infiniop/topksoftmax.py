@@ -18,7 +18,7 @@ from libinfiniop import (
     InfiniDtypeNames,
     InfiniDeviceNames,
     infiniopOperatorDescriptor_t,
-    torch_device_map
+    torch_device_map,
 )
 
 # ==============================================================================
@@ -57,7 +57,16 @@ NUM_ITERATIONS = 1000
 
 
 def tensorInfo(data):
-    print("data:  ", data.is_contiguous(), data.device, data.dtype, data.shape, data.stride(), data.data_ptr(), hex(data.data_ptr()))
+    print(
+        "data:  ",
+        data.is_contiguous(),
+        data.device,
+        data.dtype,
+        data.shape,
+        data.stride(),
+        data.data_ptr(),
+        hex(data.data_ptr()),
+    )
 
 
 def torch_topksoftmax(router_logits, top_k, norm_topk_prob=False):
@@ -69,15 +78,15 @@ def torch_topksoftmax(router_logits, top_k, norm_topk_prob=False):
 
 
 def test(
-        handle,
-        device,
-        x_shape,
-        x_stride,
-        topk,
-        norm_topk_prob,
-        x_dtype=InfiniDtype.F32,
-        dtype=InfiniDtype.F16,
-        sync=None,
+    handle,
+    device,
+    x_shape,
+    x_stride,
+    topk,
+    norm_topk_prob,
+    x_dtype=InfiniDtype.F32,
+    dtype=InfiniDtype.F16,
+    sync=None,
 ):
     print(
         f"Testing topksoftmax on {InfiniDeviceNames[device]} with x_shape:{x_shape}"
@@ -87,7 +96,15 @@ def test(
     data = torch.arange(0, x_shape[0] * x_shape[1]).reshape(x_shape)
 
     N, width = x_shape
-    x = TestTensor(x_shape, data.stride(), x_dtype, device, scale=0.5, mode="manual", set_tensor=data)
+    x = TestTensor(
+        x_shape,
+        data.stride(),
+        x_dtype,
+        device,
+        scale=0.5,
+        mode="manual",
+        set_tensor=data,
+    )
 
     # print(x.torch_tensor())
     if sync is not None:
@@ -96,9 +113,7 @@ def test(
     descriptor = infiniopOperatorDescriptor_t()
     check_error(
         LIBINFINIOP.infiniopCreateTopksoftmaxDescriptor(
-            handle,
-            ctypes.byref(descriptor),
-            x.descriptor
+            handle, ctypes.byref(descriptor), x.descriptor
         )
     )
 
@@ -114,8 +129,12 @@ def test(
     )
     workspace = TestWorkspace(workspace_size.value, x.device)
 
-    values = torch.zeros((N, topk), dtype=torch.float32, device=torch_device_map[x.device])
-    indices = torch.zeros((N, topk), dtype=torch.int32, device=torch_device_map[x.device])
+    values = torch.zeros(
+        (N, topk), dtype=torch.float32, device=torch_device_map[x.device]
+    )
+    indices = torch.zeros(
+        (N, topk), dtype=torch.int32, device=torch_device_map[x.device]
+    )
 
     def lib_topksoftmax():
         check_error(
@@ -132,7 +151,9 @@ def test(
             )
         )
 
-    lable_values, lable_indices = torch_topksoftmax(x.torch_tensor().clone(), topk, norm_topk_prob=norm_topk_prob)
+    lable_values, lable_indices = torch_topksoftmax(
+        x.torch_tensor().clone(), topk, norm_topk_prob=norm_topk_prob
+    )
     lable_indices = lable_indices.to(dtype=torch.int32)
     lib_topksoftmax()
 
@@ -167,4 +188,3 @@ if __name__ == "__main__":
         test_operator(device, test, _TEST_CASES, _VALUE_DTYPES)
 
     print("\033[92mTest passed!\033[0m")
-
