@@ -25,7 +25,8 @@ from enum import Enum, auto
 # These are not meant to be imported from other modules
 _TEST_CASES_ = [
     # shape, axis, p, eps
-    ((4, 4), 0, 1, 1e-12),
+    ((2048, 2050), 0, 1, 1e-12),
+    ((2048, 2050), 1, 1, 1e-12),
     ((12, 16, 512, 512), 0, 2, 1e-12),
     ((12, 16, 512, 512), 1, 2, 1e-12),
     ((12, 16, 512, 512), 2, 1, 1e-12),
