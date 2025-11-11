@@ -24,17 +24,20 @@ from enum import Enum, auto
 # ==============================================================================
 # These are not meant to be imported from other modules
 _TEST_CASES_ = [
-    # shape, axis, p, eps
-    ((2048, 2050), 0, 1, 1e-12),
-    ((2048, 2050), 1, 1, 1e-12),
-    ((12, 16, 512, 512), 0, 2, 1e-12),
-    ((12, 16, 512, 512), 1, 2, 1e-12),
-    ((12, 16, 512, 512), 2, 1, 1e-12),
-    ((12, 16, 512, 512), 3, 2, 1e-12),
-    ((1, 16, 512, 512), 0, 2, 1e-12),
-    ((1, 16, 512, 512), 1, 1, 1e-12),
-    ((1, 16, 512, 512), 2, 2, 1e-12),
-    ((1, 16, 512, 512), 3, 2, 1e-12),
+    # shape, x_strides, y_strides, axis, p, eps
+    ((2, 1, 512), [17408, 1024, 1], [17408, 1024, 1], -1, 2, 1e-12),
+    ((2, 1, 1024), [17408, 1024, 1], [17408, 1024, 1], -1, 2, 1e-12),
+    ((2, 1, 2048), [17408, 1024, 1], [17408, 1024, 1], -1, 2, 1e-12),
+    ((2048, 2050), None, None, 0, 1, 1e-12),
+    ((2048, 2050), None, None, 1, 1, 1e-12),
+    ((12, 16, 512, 512), None, None, 0, 2, 1e-12),
+    ((12, 16, 512, 512), None, None, 1, 2, 1e-12),
+    ((12, 16, 512, 512), None, None, 2, 1, 1e-12),
+    ((12, 16, 512, 512), None, None, 3, 2, 1e-12),
+    ((1, 16, 512, 512), None, None, 0, 2, 1e-12),
+    ((1, 16, 512, 512), None, None, 1, 1, 1e-12),
+    ((1, 16, 512, 512), None, None, 2, 2, 1e-12),
+    ((1, 16, 512, 512), None, None, 3, 2, 1e-12),
 ]
 
 # Data types used for testing
@@ -80,6 +83,8 @@ def test(
     handle,
     device,
     shape,
+    x_strides,
+    y_strides,
     axis,
     p,
     eps,
@@ -88,16 +93,16 @@ def test(
     sync=None,
 ):
     print(
-        f"Testing LPNorm on {InfiniDeviceNames[device]} with shape:{shape}, axis:{axis}, p:{p}, eps:{eps} dtype:{InfiniDtypeNames[dtype]} inplace:{inplace}"
+        f"Testing LPNorm on {InfiniDeviceNames[device]} with shape:{shape}, y_strides:{y_strides}, x_strides:{x_strides}, axis:{axis}, p:{p}, eps:{eps} dtype:{InfiniDtypeNames[dtype]} inplace:{inplace}"
     )
 
-    x = TestTensor(shape, None, dtype, device)
+    x = TestTensor(shape, x_strides, dtype, device)
     ans = lp_norm(x.torch_tensor(), axis, p, eps)
 
     if inplace == Inplace.INPLACE_X:
         y = x
     else:
-        y = TestTensor(shape, None, dtype, device)
+        y = TestTensor(shape, y_strides, dtype, device)
 
     if sync is not None:
         sync()
