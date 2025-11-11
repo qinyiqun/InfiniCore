@@ -37,19 +37,19 @@ _TEST_CASES_ = [
     ((4, 4, 5632), (45056, 5632, 1), (45056, 5632, 1)),
 ]
 
+
 class Inplace(Enum):
     OUT_OF_PLACE = auto()
     INPLACE_INPUT = auto()
 
+
 _INPLACE = [
-    Inplace.OUT_OF_PLACE, 
+    Inplace.OUT_OF_PLACE,
     Inplace.INPLACE_INPUT,
 ]
 
 _TEST_CASES = [
-    test_case + (inplace,)
-    for test_case in _TEST_CASES_
-    for inplace in _INPLACE
+    test_case + (inplace,) for test_case in _TEST_CASES_ for inplace in _INPLACE
 ]
 
 _TENSOR_DTYPES = [InfiniDtype.F16, InfiniDtype.F32, InfiniDtype.BF16]
@@ -60,14 +60,15 @@ _TOLERANCE_MAP = {
     InfiniDtype.BF16: {"atol": 1e-2, "rtol": 1e-2},
 }
 
-DEBUG       = False
-PROFILE     = False
-NUM_PRERUN  = 10
+DEBUG = False
+PROFILE = False
+NUM_PRERUN = 10
 NUM_ITERATIONS = 1000
 
 
 def tanh(output, input):
     output.copy_(torch.tanh(input))
+
 
 def test(
     handle,
@@ -140,7 +141,9 @@ def test(
     if DEBUG:
         debug(output.actual_tensor(), output.torch_tensor(), atol=atol, rtol=rtol)
 
-    assert torch.allclose(output.actual_tensor(), output.torch_tensor(), atol=atol, rtol=rtol)
+    assert torch.allclose(
+        output.actual_tensor(), output.torch_tensor(), atol=atol, rtol=rtol
+    )
 
     # Profiling workflow
     if PROFILE:

@@ -4,7 +4,14 @@ import gguf
 from typing import List
 from numpy.lib.stride_tricks import as_strided
 
-from .. import InfiniopTestWriter, InfiniopTestCase, np_dtype_to_ggml, gguf_strides, contiguous_gguf_strides, process_zero_stride_tensor
+from .. import (
+    InfiniopTestWriter,
+    InfiniopTestCase,
+    np_dtype_to_ggml,
+    gguf_strides,
+    contiguous_gguf_strides,
+    process_zero_stride_tensor,
+)
 
 
 def zeros(x: np.ndarray):
@@ -12,14 +19,15 @@ def zeros(x: np.ndarray):
 
 
 class ZerosTestCase(InfiniopTestCase):
-    def __init__(self,
-                 x: np.ndarray,
-                 shape_x: List[int] | None,
-                 stride_x: List[int] | None,
-                 y: np.ndarray,
-                 shape_y: List[int] | None,
-                 stride_y: List[int] | None
-                 ):
+    def __init__(
+        self,
+        x: np.ndarray,
+        shape_x: List[int] | None,
+        stride_x: List[int] | None,
+        y: np.ndarray,
+        shape_y: List[int] | None,
+        stride_y: List[int] | None,
+    ):
         super().__init__("zeros")
         self.x = x
         self.shape_x = shape_x
@@ -36,10 +44,18 @@ class ZerosTestCase(InfiniopTestCase):
             test_writer.add_array(test_writer.gguf_key("y.shape"), self.shape_y)
 
         if self.stride_x is not None:
-            test_writer.add_array(test_writer.gguf_key("x.strides"), gguf_strides(*self.stride_x))
+            test_writer.add_array(
+                test_writer.gguf_key("x.strides"), gguf_strides(*self.stride_x)
+            )
         test_writer.add_array(
             test_writer.gguf_key("y.strides"),
-            gguf_strides(*self.stride_y if self.stride_y is not None else contiguous_gguf_strides(self.shape_y))
+            gguf_strides(
+                *(
+                    self.stride_y
+                    if self.stride_y is not None
+                    else contiguous_gguf_strides(self.shape_y)
+                )
+            ),
         )
         # print(test_writer)
         test_writer.add_tensor(
@@ -75,21 +91,22 @@ if __name__ == "__main__":
         ((4, 4, 5632), (45056, 5632, 1), (45056, 5632, 1)),
     ]
 
-    _TENSOR_DTYPES_ = [np.bool_,  # 2
-                       np.int8,  # 3
-                       np.int16,  # 4
-                       np.int32,  # 5
-                       np.int64,  # 6
-                       # np.uint8,  # 7
-                       # np.uint16,  # 8
-                       # np.uint32,  # 9
-                       # np.uint64,  # 10
-                       # InfiniDtype.F8,  # 11
-                       np.float16,  # 12
-                       np.float32,  # 13
-                       np.float64,  # 14
-                       # InfiniDtype.BF16,  # 19
-                       ]
+    _TENSOR_DTYPES_ = [
+        np.bool_,  # 2
+        np.int8,  # 3
+        np.int16,  # 4
+        np.int32,  # 5
+        np.int64,  # 6
+        # np.uint8,  # 7
+        # np.uint16,  # 8
+        # np.uint32,  # 9
+        # np.uint64,  # 10
+        # InfiniDtype.F8,  # 11
+        np.float16,  # 12
+        np.float32,  # 13
+        np.float64,  # 14
+        # InfiniDtype.BF16,  # 19
+    ]
 
     for dtype in _TENSOR_DTYPES_:
         for shape, stride_x, stride_y in _TEST_CASES_:

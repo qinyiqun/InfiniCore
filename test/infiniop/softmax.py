@@ -25,15 +25,15 @@ from enum import Enum, auto
 # These are not meant to be imported from other modules
 _TEST_CASES_ = [
     # shape, axis
-    ((4, 4), 0), 
-    ((12, 16, 512, 512), 0), 
-    ((12, 16, 512, 512), 1), 
-    ((12, 16, 512, 512), 2), 
-    ((12, 16, 512, 512), 3), 
+    ((4, 4), 0),
+    ((12, 16, 512, 512), 0),
+    ((12, 16, 512, 512), 1),
+    ((12, 16, 512, 512), 2),
+    ((12, 16, 512, 512), 3),
     ((1, 16, 512, 512), 0),
     ((1, 16, 512, 512), 1),
     ((1, 16, 512, 512), 2),
-    ((1, 16, 512, 512), 3), 
+    ((1, 16, 512, 512), 3),
 ]
 
 # Data types used for testing
@@ -87,7 +87,7 @@ def test(
 
     x = TestTensor(shape, None, dtype, device)
     ans = softmax(x.torch_tensor(), axis)
-    
+
     if inplace == Inplace.INPLACE_X:
         y = x
     else:

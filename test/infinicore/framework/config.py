@@ -43,6 +43,7 @@ def get_args():
     device_group.add_argument(
         "--iluvatar", action="store_true", help="Run Iluvatar GPU test"
     )
+    device_group.add_argument("--qy", action="store_true", help="Run Qy GPU test")
     device_group.add_argument("--metax", action="store_true", help="Run METAX GPU test")
     device_group.add_argument(
         "--moore", action="store_true", help="Run MTHREADS GPU test"
@@ -66,6 +67,8 @@ def get_test_devices(args):
         devices_to_test.append(InfiniDeviceEnum.NVIDIA)
     if args.iluvatar:
         devices_to_test.append(InfiniDeviceEnum.ILUVATAR)
+    if args.qy:
+        devices_to_test.append(InfiniDeviceEnum.QY)
     if args.cambricon:
         try:
             import torch_mlu
