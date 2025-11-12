@@ -2,7 +2,7 @@ import infinicore
 from infinicore.lib import _infinicore
 from infinicore.tensor import Tensor
 
-__all__ = ["causal_softmax", "rms_norm", "silu", "swiglu"]
+__all__ = ["causal_softmax", "random_sample", "rms_norm", "silu", "swiglu"]
 
 
 def causal_softmax(input: Tensor, out=None) -> Tensor:
@@ -63,5 +63,39 @@ def swiglu(input: Tensor, other: Tensor, *, out=None):
         return Tensor(_infinicore.swiglu(input._underlying, other._underlying))
 
     _infinicore.swiglu_(out._underlying, input._underlying, other._underlying)
+
+    return out
+
+
+def random_sample(
+    logits: Tensor,
+    random_val: float,
+    topp: float,
+    topk: int,
+    temperature: float,
+    *,
+    out=None,
+) -> Tensor:
+    r"""Sample an index from logits with nucleus/top-k filtering."""
+
+    if out is None:
+        return Tensor(
+            _infinicore.random_sample(
+                logits._underlying,
+                random_val,
+                topp,
+                topk,
+                temperature,
+            )
+        )
+
+    _infinicore.random_sample_(
+        out._underlying,
+        logits._underlying,
+        random_val,
+        topp,
+        topk,
+        temperature,
+    )
 
     return out
