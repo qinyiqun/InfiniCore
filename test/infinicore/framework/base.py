@@ -1,6 +1,6 @@
 import torch
 import infinicore
-import traceback  # Add import for traceback
+import traceback
 
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
@@ -12,8 +12,6 @@ from .utils import (
     create_test_comparator,
     infinicore_tensor_from_torch,
     profile_operation,
-    synchronize_device,
-    convert_infinicore_to_torch,
 )
 
 
@@ -244,6 +242,12 @@ class TestRunner:
         self.passed_tests = (
             []
         )  # Track passed tests (both operators implemented and passed)
+        # Add benchmark timing statistics
+        self.benchmark_times = {
+            "torch_total": 0.0,
+            "infinicore_total": 0.0,
+            "per_test_case": {},  # Store timing per test case
+        }
 
     def run_tests(self, devices, test_func, test_type="Test"):
         """
@@ -344,8 +348,34 @@ class TestRunner:
             else:
                 print(f"\n\033[92mAll tests passed!\033[0m")
 
+        # Print benchmark summary if benchmarking was enabled
+        if self.config.bench and (
+            self.benchmark_times["torch_total"] > 0
+            or self.benchmark_times["infinicore_total"] > 0
+        ):
+            self._print_benchmark_summary()
+
         print(f"{'='*60}")
         return result
+
+    def _print_benchmark_summary(self):
+        """Print benchmark timing summary"""
+        print(f"{'-'*60}")
+        print("BENCHMARK SUMMARY")
+
+        torch_total = self.benchmark_times["torch_total"]
+        infinicore_total = self.benchmark_times["infinicore_total"]
+
+        if torch_total > 0:
+            print(f"PyTorch Total Time: {torch_total * 1000:.3f} ms")
+        if infinicore_total > 0:
+            print(f"InfiniCore Total Time: {infinicore_total * 1000:.3f} ms")
+
+        if torch_total > 0 and infinicore_total > 0:
+            speedup = (
+                torch_total / infinicore_total if infinicore_total > 0 else float("inf")
+            )
+            print(f"Speedup (PyTorch/InfiniCore): {speedup:.2f}x")
 
 
 class BaseOperatorTest(ABC):
@@ -711,8 +741,13 @@ class BaseOperatorTest(ABC):
         comparison_target,
     ):
         """
-        Unified benchmarking logic
+        Unified benchmarking logic with timing accumulation
         """
+
+        # Initialize timing variables
+        torch_time = 0.0
+        infini_time = 0.0
+
         if torch_implemented:
             if output_count > 1:
                 # For multiple outputs, just call the operator
@@ -735,12 +770,13 @@ class BaseOperatorTest(ABC):
                             else inputs[comparison_target]
                         )
 
-            profile_operation(
+            torch_time = profile_operation(
                 "PyTorch   ",
                 torch_op,
                 device_str,
                 config.num_prerun,
                 config.num_iterations,
+                total=True,
             )
 
         if infini_implemented:
@@ -759,10 +795,17 @@ class BaseOperatorTest(ABC):
                         else infini_inputs[comparison_target]
                     )
 
-            profile_operation(
+            infini_time = profile_operation(
                 "InfiniCore",
                 infini_op,
                 device_str,
                 config.num_prerun,
                 config.num_iterations,
+                total=True,
             )
+
+        # Store timing information in the test runner
+        if hasattr(config, "_test_runner") and config._test_runner:
+            # Accumulate total times
+            config._test_runner.benchmark_times["torch_total"] += torch_time
+            config._test_runner.benchmark_times["infinicore_total"] += infini_time

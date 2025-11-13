@@ -125,6 +125,14 @@ def run_all_op_tests(ops_dir=None, specific_ops=None, extra_args=None):
     # Check if verbose mode is enabled
     verbose_mode = extra_args and "--verbose" in extra_args
 
+    # Check if bench mode is enabled for cumulative timing
+    bench_mode = extra_args and "--bench" in extra_args
+    cumulative_timing = {
+        "total_torch_time": 0.0,
+        "total_infinicore_time": 0.0,
+        "operators_tested": 0,
+    }
+
     for test_file in operator_test_files:
         test_name = test_file.stem
 
@@ -157,7 +165,7 @@ def run_all_op_tests(ops_dir=None, specific_ops=None, extra_args=None):
                 # Both operators not implemented - skipped test
                 success = False  # Not a failure, but skipped
                 returncode = -2  # Special code for skipped
-            elif "one operator not implemented" in stdout_lower:
+            elif "operator not implemented" in stdout_lower:
                 # One operator not implemented - partial test
                 success = False  # Not fully successful
                 returncode = -3  # Special code for partial
@@ -202,6 +210,34 @@ def run_all_op_tests(ops_dir=None, specific_ops=None, extra_args=None):
                 f"{status_icon}  {test_name}: {status_text} (return code: {returncode})"
             )
 
+            # Extract benchmark timing if in bench mode
+            if bench_mode and success:
+                # Look for benchmark summary in stdout
+                lines = result.stdout.split("\n")
+                torch_time = 0.0
+                infini_time = 0.0
+
+                for line in lines:
+                    if "PyTorch Total Time:" in line:
+                        try:
+                            # Extract time value (e.g., "PyTorch Total Time: 123.456 ms")
+                            torch_time = (
+                                float(line.split(":")[1].strip().split()[0]) / 1000.0
+                            )  # Convert to seconds
+                        except:
+                            pass
+                    elif "InfiniCore Total Time:" in line:
+                        try:
+                            infini_time = (
+                                float(line.split(":")[1].strip().split()[0]) / 1000.0
+                            )  # Convert to seconds
+                        except:
+                            pass
+
+                cumulative_timing["total_torch_time"] += torch_time
+                cumulative_timing["total_infinicore_time"] += infini_time
+                cumulative_timing["operators_tested"] += 1
+
             # In verbose mode, stop execution on first failure
             if verbose_mode and not success and returncode not in [-2, -3]:
                 break
@@ -219,11 +255,13 @@ def run_all_op_tests(ops_dir=None, specific_ops=None, extra_args=None):
                 print(f"{'!'*60}")
                 break
 
-    return results
+    return results, cumulative_timing
 
 
-def print_summary(results, verbose_mode=False, total_expected_tests=0):
-    """Print a comprehensive summary of test results."""
+def print_summary(
+    results, verbose_mode=False, total_expected_tests=0, cumulative_timing=None
+):
+    """Print a comprehensive summary of test results including benchmark data."""
     print(f"\n{'='*80}")
     print("CUMULATIVE TEST SUMMARY")
     print(f"{'='*80}")
@@ -272,6 +310,19 @@ def print_summary(results, verbose_mode=False, total_expected_tests=0):
     if partial > 0:
         print(f"Partial: {partial}")
 
+    # Print benchmark summary if cumulative_timing data is available
+    if cumulative_timing and cumulative_timing["operators_tested"] > 0:
+        print(f"{'-'*40}")
+        print("BENCHMARK SUMMARY:")
+        print(f"  Operators Tested: {cumulative_timing['operators_tested']}")
+        print(
+            f"  Total PyTorch Time: {cumulative_timing['total_torch_time'] * 1000:.3f} ms"
+        )
+        print(
+            f"  Total InfiniCore Time: {cumulative_timing['total_infinicore_time'] * 1000:.3f} ms"
+        )
+        print(f"{'-'*40}")
+
     # Display passed operators
     if passed_operators:
         print(f"\n✅ PASSED OPERATORS ({len(passed_operators)}):")
@@ -304,7 +355,7 @@ def print_summary(results, verbose_mode=False, total_expected_tests=0):
             print("  " + ", ".join(line_ops))
 
     if total > 0:
-        # Calculate success rate based on executed tests only
+        # Calculate success rate based on actual executed tests
         executed_tests = passed + failed + partial
         if executed_tests > 0:
             success_rate = passed / executed_tests * 100
@@ -387,6 +438,9 @@ def generate_help_epilog(ops_dir):
     )
     epilog_parts.append("  python run.py --cpu --nvidia --verbose")
     epilog_parts.append("")
+    epilog_parts.append("  # Run with benchmarking to get cumulative timing")
+    epilog_parts.append("  python run.py --cpu --bench")
+    epilog_parts.append("")
     epilog_parts.append("  # List available tests without running")
     epilog_parts.append("  python run.py --list")
     epilog_parts.append("")
@@ -413,7 +467,7 @@ def generate_help_epilog(ops_dir):
         "  - Operators are automatically discovered from the ops directory"
     )
     epilog_parts.append(
-        "  - --bench option is disabled in batch mode (run individual tests for benchmarking)"
+        "  - --bench mode now shows cumulative timing across all operators"
     )
     epilog_parts.append(
         "  - --verbose mode stops execution on first error and shows full traceback"
@@ -527,14 +581,16 @@ def main():
     print()
 
     # Run all tests
-    results = run_all_op_tests(
+    results, cumulative_timing = run_all_op_tests(
         ops_dir=ops_dir,
         specific_ops=args.ops,
         extra_args=unknown_args,
     )
 
     # Print summary and exit with appropriate code
-    all_passed = print_summary(results, args.verbose, total_expected_tests)
+    all_passed = print_summary(
+        results, args.verbose, total_expected_tests, cumulative_timing
+    )
 
     # Check if there were any tests with missing implementations
     has_missing_implementations = any(

@@ -32,6 +32,10 @@ class GenericTestRunner:
         )
 
         runner = TestRunner(self.operator_test.test_cases, config)
+
+        # Pass the test runner instance to config for benchmark timing accumulation
+        config._test_runner = runner
+
         devices = get_test_devices(self.args)
 
         # Run unified tests - returns True if no tests failed
