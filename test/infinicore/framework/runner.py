@@ -21,7 +21,9 @@ class GenericTestRunner:
         """Execute the complete test suite
 
         Returns:
-            bool: True if all tests passed or were skipped/partial, False if any tests failed
+            tuple: (success, test_runner) where:
+                success: bool indicating if all tests passed or were skipped/partial
+                test_runner: TestRunner instance with test results
         """
         config = TestConfig(
             debug=self.args.debug,
@@ -51,7 +53,7 @@ class GenericTestRunner:
         # Both conditions must be True for overall success
         # - has_no_failures: no test failures during execution
         # - summary_passed: summary confirms no failures
-        return has_no_failures and summary_passed
+        return (has_no_failures and summary_passed), runner
 
     def run_and_exit(self):
         """Run tests and exit with appropriate status code
@@ -60,5 +62,5 @@ class GenericTestRunner:
             0: All tests passed or were skipped/partial (no failures)
             1: One or more tests failed
         """
-        success = self.run()
+        success, runner = self.run()
         sys.exit(0 if success else 1)

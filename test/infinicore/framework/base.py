@@ -1,9 +1,9 @@
 import torch
 import infinicore
 import traceback
-
+from dataclasses import dataclass
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 
 from .datatypes import to_torch_dtype, to_infinicore_dtype
 from .devices import InfiniDeviceNames, torch_device_map
@@ -15,6 +15,18 @@ from .utils import (
 )
 
 
+@dataclass
+class TestResult:
+    """Test result data structure"""
+    success: bool
+    return_code: int  # 0: success, -1: failure, -2: skipped, -3: partial
+    torch_time: float = 0.0
+    infini_time: float = 0.0
+    error_message: str = ""
+    test_case: Any = None
+    device: Any = None
+
+
 class TestCase:
     """Test case with all configuration included"""
 
@@ -23,11 +35,11 @@ class TestCase:
         inputs,
         kwargs=None,
         output_spec=None,
+        output_specs=None,
         comparison_target=None,
         description="",
         tolerance=None,
         output_count=1,
-        output_specs=None,
     ):
         """
         Initialize a test case with complete configuration
@@ -248,6 +260,8 @@ class TestRunner:
             "infinicore_total": 0.0,
             "per_test_case": {},  # Store timing per test case
         }
+        # Store test results
+        self.test_results = []
 
     def run_tests(self, devices, test_func, test_type="Test"):
         """
@@ -270,25 +284,30 @@ class TestRunner:
                 try:
                     print(f"{test_case}")
 
-                    # Execute test and get result status
-                    success, status = test_func(device, test_case, self.config)
+                    # Execute test and get TestResult object
+                    test_result = test_func(device, test_case, self.config)
+                    self.test_results.append(test_result)
 
-                    # Handle different test statuses
-                    if status == "passed":
+                    # Handle different test statuses based on return_code
+                    if test_result.return_code == 0:  # Success
                         self.passed_tests.append(
                             f"{test_case} - {InfiniDeviceNames[device]}"
                         )
                         print(f"\033[92m✓\033[0m Passed")
-                    elif status == "skipped":
-                        # Test was skipped due to both operators not being implemented
+                    elif test_result.return_code == -1:
+                        fail_msg = f"{test_case} - {InfiniDeviceNames[device]} - Test terminated in verbose mode."
+                        self.failed_tests.append(fail_msg)
+                    elif test_result.return_code == -2:  # Skipped
                         skip_msg = f"{test_case} - {InfiniDeviceNames[device]} - Both operators not implemented"
                         self.skipped_tests.append(skip_msg)
-                    elif status == "partial":
-                        # Test was partially executed (one operator not implemented)
+                        print(f"\033[93m⚠\033[0m Both operators not implemented - test skipped")
+                    elif test_result.return_code == -3:  # Partial
                         partial_msg = f"{test_case} - {InfiniDeviceNames[device]} - One operator not implemented"
                         self.partial_tests.append(partial_msg)
+                        print(f"\033[93m⚠\033[0m One operator not implemented - running single operator without comparison")
 
-                    # Failed tests are handled in the exception handler below
+                    if self.config.verbose and test_result.return_code != 0:
+                        return False
 
                 except Exception as e:
                     error_msg = (
@@ -296,7 +315,16 @@ class TestRunner:
                     )
                     print(f"\033[91m✗\033[0m {error_msg}")
                     self.failed_tests.append(error_msg)
-
+                    
+                    # Create a failed TestResult
+                    failed_result = TestResult(
+                        success=False,
+                        return_code=-1,
+                        error_message=str(e),
+                        test_case=test_case,
+                        device=device
+                    )
+                    self.test_results.append(failed_result)
                     # In verbose mode, print full traceback and stop execution
                     if self.config.verbose:
                         traceback.print_exc()
@@ -305,8 +333,7 @@ class TestRunner:
                     if self.config.debug:
                         raise
 
-        # Return True if no tests failed (skipped/partial tests don't count as failures)
-        return len(self.failed_tests) == 0
+        return len(self.failed_tests) == 0 and len(self.skipped_tests) == 0 and len(self.partial_tests) == 0
 
     def print_summary(self):
         """
@@ -376,6 +403,10 @@ class TestRunner:
                 torch_total / infinicore_total if infinicore_total > 0 else float("inf")
             )
             print(f"Speedup (PyTorch/InfiniCore): {speedup:.2f}x")
+
+    def get_test_results(self):
+        """Get all test results"""
+        return self.test_results
 
 
 class BaseOperatorTest(ABC):
@@ -480,11 +511,17 @@ class BaseOperatorTest(ABC):
             config: Test configuration
 
         Returns:
-            tuple: (success, status) where:
-                success: bool indicating if test passed
-                status: str describing test status ("passed", "skipped", "partial")
+            TestResult: Test result object containing status and timing information
         """
         device_str = torch_device_map[device]
+        
+        # Initialize test result
+        test_result = TestResult(
+            success=False,
+            return_code=-1,  # Default to failure
+            test_case=test_case,
+            device=device
+        )
 
         # Prepare inputs and kwargs with actual tensors
         inputs, kwargs = self.prepare_inputs_and_kwargs(test_case, device)
@@ -559,7 +596,10 @@ class BaseOperatorTest(ABC):
         except NotImplementedError:
             if config.verbose:
                 traceback.print_exc()
-                return False  # Stop test execution immediately
+                # Return test result immediately in verbose mode
+                test_result.return_code = -1
+                test_result.error_message = "torch_operator not implemented"
+                return test_result
             torch_implemented = False
             torch_result = None
 
@@ -570,26 +610,24 @@ class BaseOperatorTest(ABC):
         except NotImplementedError:
             if config.verbose:
                 traceback.print_exc()
-                return False  # Stop test execution immediately
+                # Return test result immediately in verbose mode
+                test_result.return_code = -1
+                test_result.error_message = "infinicore_operator not implemented"
+                return test_result
             infini_implemented = False
             infini_result = None
 
         # Skip if neither operator is implemented
         if not torch_implemented and not infini_implemented:
-            print(f"\033[93m⚠\033[0m Both operators not implemented - test skipped")
-            return False, "skipped"
+            test_result.return_code = -2  # Skipped
+            return test_result
 
         # Single operator execution without comparison
         if not torch_implemented or not infini_implemented:
-            missing_op = (
-                "torch_operator" if not torch_implemented else "infinicore_operator"
-            )
-            print(
-                f"\033[93m⚠\033[0m {missing_op} not implemented - running single operator without comparison"
-            )
-
+            test_result.return_code = -3  # Partial
+            # Run benchmarking for partial tests if enabled
             if config.bench:
-                self._run_benchmarking(
+                torch_time, infini_time = self._run_benchmarking(
                     config,
                     device_str,
                     torch_implemented,
@@ -601,8 +639,9 @@ class BaseOperatorTest(ABC):
                     test_case.output_count,
                     comparison_target,
                 )
-            return False, "partial"
-
+                test_result.torch_time = torch_time
+                test_result.infini_time = infini_time
+            return test_result
         # ==========================================================================
         # MULTIPLE OUTPUTS COMPARISON LOGIC
         # ==========================================================================
@@ -711,7 +750,7 @@ class BaseOperatorTest(ABC):
         # UNIFIED BENCHMARKING LOGIC
         # ==========================================================================
         if config.bench:
-            self._run_benchmarking(
+            torch_time, infini_time = self._run_benchmarking(
                 config,
                 device_str,
                 True,
@@ -723,9 +762,13 @@ class BaseOperatorTest(ABC):
                 test_case.output_count,
                 comparison_target,
             )
+            test_result.torch_time = torch_time
+            test_result.infini_time = infini_time
 
         # Test passed successfully
-        return True, "passed"
+        test_result.success = True
+        test_result.return_code = 0
+        return test_result
 
     def _run_benchmarking(
         self,
@@ -742,8 +785,10 @@ class BaseOperatorTest(ABC):
     ):
         """
         Unified benchmarking logic with timing accumulation
-        """
 
+        Returns:
+            tuple: (torch_time, infini_time) timing results
+        """
         # Initialize timing variables
         torch_time = 0.0
         infini_time = 0.0
@@ -809,3 +854,5 @@ class BaseOperatorTest(ABC):
             # Accumulate total times
             config._test_runner.benchmark_times["torch_total"] += torch_time
             config._test_runner.benchmark_times["infinicore_total"] += infini_time
+
+        return torch_time, infini_time

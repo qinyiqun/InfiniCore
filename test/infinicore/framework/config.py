@@ -100,8 +100,9 @@ Examples:
 
     # Device options using shared hardware info
     hardware_group = get_hardware_args_group(parser)
+    args, unknown = parser.parse_known_args()
 
-    return parser.parse_args()
+    return args
 
 
 def get_test_devices(args):
