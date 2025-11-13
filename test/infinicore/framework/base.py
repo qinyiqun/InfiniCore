@@ -1,5 +1,6 @@
 import torch
 import infinicore
+import traceback  # Add import for traceback
 
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
@@ -216,14 +217,19 @@ class TestCase:
 class TestConfig:
     """Test configuration"""
 
-    def __init__(self, debug=False, bench=False, num_prerun=10, num_iterations=1000):
+    def __init__(
+        self,
+        debug=False,
+        bench=False,
+        num_prerun=10,
+        num_iterations=1000,
+        verbose=False,
+    ):
         self.debug = debug
         self.bench = bench
         self.num_prerun = num_prerun
         self.num_iterations = num_iterations
-
-
-# In base.py - update the TestRunner class
+        self.verbose = verbose
 
 
 class TestRunner:
@@ -273,16 +279,11 @@ class TestRunner:
                         # Test was skipped due to both operators not being implemented
                         skip_msg = f"{test_case} - {InfiniDeviceNames[device]} - Both operators not implemented"
                         self.skipped_tests.append(skip_msg)
-                        print(
-                            f"\033[93m⚠\033[0m Skipped - both operators not implemented"
-                        )
                     elif status == "partial":
                         # Test was partially executed (one operator not implemented)
                         partial_msg = f"{test_case} - {InfiniDeviceNames[device]} - One operator not implemented"
                         self.partial_tests.append(partial_msg)
-                        print(
-                            f"\033[93m⚠\033[0m Partial - one operator not implemented"
-                        )
+
                     # Failed tests are handled in the exception handler below
 
                 except Exception as e:
@@ -291,6 +292,12 @@ class TestRunner:
                     )
                     print(f"\033[91m✗\033[0m {error_msg}")
                     self.failed_tests.append(error_msg)
+
+                    # In verbose mode, print full traceback and stop execution
+                    if self.config.verbose:
+                        traceback.print_exc()
+                        return False  # Stop test execution immediately
+
                     if self.config.debug:
                         raise
 
@@ -312,34 +319,16 @@ class TestRunner:
 
         print(f"\n{'='*60}")
         print("TEST SUMMARY")
-        print(f"{'='*60}")
         print(f"Total tests: {total_tests}")
         print(f"\033[92mPassed: {passed_count}\033[0m")
 
-        # Display partial tests (one operator not implemented)
-        if self.partial_tests:
-            print(
-                f"\033[93mPartial (one operator not implemented): {partial_count}\033[0m"
-            )
-            for test in self.partial_tests:
-                print(f"  - {test}")
-
-        # Display skipped tests (both operators not implemented)
-        if self.skipped_tests:
-            print(
-                f"\033[93mSkipped (both operators not implemented): {skipped_count}\033[0m"
-            )
-            for test in self.skipped_tests:
-                print(f"  - {test}")
-
+        result = True
         # Display failed tests
         if self.failed_tests:
             print(f"\033[91mFailed: {failed_count}\033[0m")
-            for failure in self.failed_tests:
-                print(f"  - {failure}")
 
             # Return False only if there are actual test failures
-            return False
+            result = False
         else:
             # Calculate success rate based on actual executed tests
             executed_tests = passed_count + partial_count + failed_count
@@ -352,10 +341,11 @@ class TestRunner:
                 print(
                     f"\n\033[93mTests completed with some implementations missing\033[0m"
                 )
-                return True  # Skipped/partial tests don't count as failures
             else:
                 print(f"\n\033[92mAll tests passed!\033[0m")
-                return True
+
+        print(f"{'='*60}")
+        return result
 
 
 class BaseOperatorTest(ABC):
@@ -537,6 +527,9 @@ class BaseOperatorTest(ABC):
             if torch_result is None:
                 torch_implemented = False
         except NotImplementedError:
+            if config.verbose:
+                traceback.print_exc()
+                return False  # Stop test execution immediately
             torch_implemented = False
             torch_result = None
 
@@ -545,6 +538,9 @@ class BaseOperatorTest(ABC):
             if infini_result is None:
                 infini_implemented = False
         except NotImplementedError:
+            if config.verbose:
+                traceback.print_exc()
+                return False  # Stop test execution immediately
             infini_implemented = False
             infini_result = None
 

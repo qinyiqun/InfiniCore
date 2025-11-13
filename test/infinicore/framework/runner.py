@@ -28,6 +28,7 @@ class GenericTestRunner:
             bench=self.args.bench,
             num_prerun=self.args.num_prerun,
             num_iterations=self.args.num_iterations,
+            verbose=self.args.verbose,  # Pass verbose flag to TestConfig
         )
 
         runner = TestRunner(self.operator_test.test_cases, config)

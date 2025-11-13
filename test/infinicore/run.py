@@ -122,6 +122,9 @@ def run_all_op_tests(ops_dir=None, specific_ops=None, extra_args=None):
 
     results = {}
 
+    # Check if verbose mode is enabled
+    verbose_mode = extra_args and "--verbose" in extra_args
+
     for test_file in operator_test_files:
         test_name = test_file.stem
 
@@ -199,14 +202,27 @@ def run_all_op_tests(ops_dir=None, specific_ops=None, extra_args=None):
                 f"{status_icon}  {test_name}: {status_text} (return code: {returncode})"
             )
 
+            # In verbose mode, stop execution on first failure
+            if verbose_mode and not success and returncode not in [-2, -3]:
+                break
+
         except Exception as e:
             print(f"💥 {test_name}: ERROR - {str(e)}")
             results[test_name] = (False, -1, "", str(e))
 
+            # In verbose mode, stop execution on any exception
+            if verbose_mode:
+                print(f"\n{'!'*60}")
+                print(
+                    f"VERBOSE MODE: Stopping execution due to exception in {test_name}"
+                )
+                print(f"{'!'*60}")
+                break
+
     return results
 
 
-def print_summary(results):
+def print_summary(results, verbose_mode=False, total_expected_tests=0):
     """Print a comprehensive summary of test results."""
     print(f"\n{'='*80}")
     print("CUMULATIVE TEST SUMMARY")
@@ -242,7 +258,11 @@ def print_summary(results):
 
     total = len(results)
 
-    print(f"Total tests: {total}")
+    print(f"Total tests run: {total}")
+    if total_expected_tests > 0 and total < total_expected_tests:
+        print(f"Total tests expected: {total_expected_tests}")
+        print(f"Tests not executed: {total_expected_tests - total}")
+
     print(f"Passed: {passed}")
     print(f"Failed: {failed}")
 
@@ -289,6 +309,10 @@ def print_summary(results):
         if executed_tests > 0:
             success_rate = passed / executed_tests * 100
             print(f"\nSuccess rate: {success_rate:.1f}%")
+
+    if verbose_mode and total < total_expected_tests:
+        print(f"\n💡 Verbose mode: Execution stopped after first failure")
+        print(f"   {total_expected_tests - total} tests were not executed")
 
     if failed == 0:
         if skipped > 0 or partial > 0:
@@ -358,6 +382,11 @@ def generate_help_epilog(ops_dir):
     epilog_parts.append("  # Run with debug mode on multiple devices")
     epilog_parts.append("  python run.py --cpu --nvidia --debug")
     epilog_parts.append("")
+    epilog_parts.append(
+        "  # Run with verbose mode to stop on first error with full traceback"
+    )
+    epilog_parts.append("  python run.py --cpu --nvidia --verbose")
+    epilog_parts.append("")
     epilog_parts.append("  # List available tests without running")
     epilog_parts.append("  python run.py --list")
     epilog_parts.append("")
@@ -386,6 +415,12 @@ def generate_help_epilog(ops_dir):
     epilog_parts.append(
         "  - --bench option is disabled in batch mode (run individual tests for benchmarking)"
     )
+    epilog_parts.append(
+        "  - --verbose mode stops execution on first error and shows full traceback"
+    )
+    epilog_parts.append(
+        "  - In verbose mode, subsequent tests are skipped after first failure"
+    )
 
     return "\n".join(epilog_parts)
 
@@ -412,6 +447,11 @@ def main():
         "--list",
         action="store_true",
         help="List all available test files without running them",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Enable verbose mode to stop on first error with full traceback (passed to individual tests)",
     )
 
     from framework import get_hardware_args_group
@@ -442,6 +482,10 @@ def main():
             print(f"Error: Ops directory '{ops_dir}' does not exist.")
             sys.exit(1)
 
+    # Add verbose flag to extra arguments if specified
+    if args.verbose and "--verbose" not in unknown_args:
+        unknown_args.append("--verbose")
+
     # Show what extra arguments will be passed
     if unknown_args:
         print(f"Passing extra arguments to test scripts: {unknown_args}")
@@ -452,6 +496,9 @@ def main():
     print(f"InfiniCore Operator Test Runner")
     print(f"Operating directory: {ops_dir}")
     print(f"Available operators: {len(available_operators)}")
+
+    if args.verbose:
+        print(f"Verbose mode: ENABLED (will stop on first error with full traceback)")
 
     if args.ops:
         # Validate requested operators
@@ -469,10 +516,13 @@ def main():
 
         if valid_ops:
             print(f"Testing operators: {', '.join(valid_ops)}")
+            total_expected_tests = len(valid_ops)
         else:
             print("No valid operators specified. Running all available tests.")
+            total_expected_tests = len(available_operators)
     else:
         print("Testing all available operators")
+        total_expected_tests = len(available_operators)
 
     print()
 
@@ -484,7 +534,7 @@ def main():
     )
 
     # Print summary and exit with appropriate code
-    all_passed = print_summary(results)
+    all_passed = print_summary(results, args.verbose, total_expected_tests)
 
     # Check if there were any tests with missing implementations
     has_missing_implementations = any(
@@ -494,6 +544,18 @@ def main():
     if all_passed and has_missing_implementations:
         print(f"\n⚠️  Note: Some operators are not fully implemented")
         print(f"   Run individual tests for details on missing implementations")
+
+    if args.verbose and not all_passed:
+        print(
+            f"\n💡 Verbose mode tip: Use individual test commands for detailed debugging:"
+        )
+        failed_ops = [
+            name
+            for name, (success, _, _, _) in results.items()
+            if not success and name in results
+        ]
+        for op in failed_ops[:3]:  # Show first 3 failed operators
+            print(f"   python {ops_dir / (op + '.py')} --verbose")
 
     sys.exit(0 if all_passed else 1)
 
