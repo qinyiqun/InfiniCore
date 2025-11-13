@@ -52,8 +52,8 @@ class Tensor:
     def is_contiguous(self):
         return self._underlying.is_contiguous()
 
-    def is_is_pinned(self):
-        return self._underlying.is_is_pinned()
+    def is_pinned(self):
+        return self._underlying.is_pinned()
 
     def copy_(self, src):
         self._underlying.copy_(src._underlying)
@@ -63,11 +63,11 @@ class Tensor:
             self._underlying.to(*tuple(arg._underlying for arg in args), **kwargs)
         )
 
-    def as_strided(self, size, stride):
-        return Tensor(self._underlying.as_strided(size, stride))
-
     def contiguous(self):
         return Tensor(self._underlying.contiguous())
+
+    def as_strided(self, size, stride):
+        return Tensor(self._underlying.as_strided(size, stride))
 
     def permute(self, dims):
         return Tensor(self._underlying.permute(dims))
