@@ -9,7 +9,7 @@ common::OpDispatcher<RoPE::schema> &RoPE::dispatcher() {
     return dispatcher_;
 };
 
-void RoPE::execute(Tensor x_out, const Tensor &x, const Tensor &pos, const Tensor &sin_cache, const Tensor &cos_cache, infinicore::nn::RoPE::Algo algo) {
+void RoPE::execute(Tensor x_out, const Tensor &x, const Tensor &pos, const Tensor &sin_table, const Tensor &cos_table, infinicore::nn::RoPE::Algo algo) {
     auto device_type = context::getDevice().getType();
     auto func = dispatcher().lookup(device_type);
 
@@ -17,17 +17,17 @@ void RoPE::execute(Tensor x_out, const Tensor &x, const Tensor &pos, const Tenso
         throw std::runtime_error("No RoPE implementation found for device type: " + std::to_string(static_cast<int>(device_type)));
     }
 
-    func(x_out, x, pos, sin_cache, cos_cache, algo);
+    func(x_out, x, pos, sin_table, cos_table, algo);
 }
 
-void rope_(Tensor x_out, const Tensor &x, const Tensor &pos, const Tensor &sin_cache, const Tensor &cos_cache, infinicore::nn::RoPE::Algo algo) {
-    RoPE::execute(x_out, x, pos, sin_cache, cos_cache, algo);
+void rope_(Tensor x_out, const Tensor &x, const Tensor &pos, const Tensor &sin_table, const Tensor &cos_table, infinicore::nn::RoPE::Algo algo) {
+    RoPE::execute(x_out, x, pos, sin_table, cos_table, algo);
 }
 
-Tensor rope(const Tensor &x, const Tensor &pos, const Tensor &sin_cache, const Tensor &cos_cache, infinicore::nn::RoPE::Algo algo) {
+Tensor rope(const Tensor &x, const Tensor &pos, const Tensor &sin_table, const Tensor &cos_table, infinicore::nn::RoPE::Algo algo) {
     Shape shape = x->shape();
     auto x_out = Tensor::empty(shape, x->dtype(), x->device());
-    rope_(x_out, x, pos, sin_cache, cos_cache, algo);
+    rope_(x_out, x, pos, sin_table, cos_table, algo);
     return x_out;
 }
 
