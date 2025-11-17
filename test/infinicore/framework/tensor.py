@@ -351,6 +351,6 @@ class TensorSpec:
         else:
             strides_str = f", strides={self.strides}" if self.strides else ""
             dtype_str = (
-                f", {str(self.dtype).replace("infinicore.", "")}" if self.dtype else ""
+                f", {str(self.dtype).replace('infinicore.', '')}" if self.dtype else ""
             )
             return f"{name_str}tensor{self.shape}{strides_str}{dtype_str}"
