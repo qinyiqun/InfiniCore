@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/op.hpp"
+#include <optional>
 
 namespace infinicore::op {
 
