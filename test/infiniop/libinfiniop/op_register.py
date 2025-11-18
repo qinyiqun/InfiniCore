@@ -875,6 +875,139 @@ def lp_norm_(lib):
         infiniopOperatorDescriptor_t,
     ]
 
+@OpRegister.operator
+def quantize_w8a8_(lib):
+    lib.infiniopCreateQuantizeW8A8Descriptor.restype = c_int32
+    lib.infiniopCreateQuantizeW8A8Descriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+    ]
+
+    lib.infiniopGetQuantizeW8A8WorkspaceSize.restype = c_int32
+    lib.infiniopGetQuantizeW8A8WorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]
+
+    lib.infiniopQuantizeW8A8.restype = c_int32
+    lib.infiniopQuantizeW8A8.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+
+    lib.infiniopQuantizeLinearW8A8.restype = c_int32
+    lib.infiniopQuantizeLinearW8A8.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+
+    lib.infiniopDestroyQuantizeW8A8Descriptor.restype = c_int32
+    lib.infiniopDestroyQuantizeW8A8Descriptor.argtypes = [
+        infiniopOperatorDescriptor_t,
+    ]
+
+@OpRegister.operator
+def linear_(lib):
+    lib.infiniopCreateLinearDescriptor.restype = c_int32
+    lib.infiniopCreateLinearDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        c_float,
+        c_float,
+    ]
+
+    lib.infiniopGetLinearWorkspaceSize.restype = c_int32
+    lib.infiniopGetLinearWorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]
+
+    lib.infiniopLinear.restype = c_int32
+    lib.infiniopLinear.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+
+    lib.infiniopDestroyLinearDescriptor.restype = c_int32
+    lib.infiniopDestroyLinearDescriptor.argtypes = [
+        infiniopOperatorDescriptor_t,
+    ]
+
+
+@OpRegister.operator
+def quant_(lib):
+    lib.infiniopCreateQuantDescriptor.restype = c_int32
+    lib.infiniopCreateQuantDescriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+    ]
+
+    lib.infiniopGetQuantWorkspaceSize.restype = c_int32
+    lib.infiniopGetQuantWorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]
+
+    lib.infiniopQuant.restype = c_int32
+    lib.infiniopQuant.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+
+    lib.infiniopDestroyQuantDescriptor.restype = c_int32
+    lib.infiniopDestroyQuantDescriptor.argtypes = [
+        infiniopOperatorDescriptor_t,
+    ]
 
 @OpRegister.operator
 def tanh_(lib):

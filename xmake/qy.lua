@@ -90,6 +90,15 @@ target("infiniop-qy")
         add_culdflags("-Xcompiler=-fPIC")
         add_cxxflags("-fPIC")
         add_cuflags("--expt-relaxed-constexpr")
+        -- Linux 下添加 CUTLASS 路径
+        if CUTLASS_ROOT then
+            add_cuflags("-I" .. CUTLASS_ROOT .. "/include")
+        elseif CUTLASS_INCLUDE then
+            add_cuflags("-I" .. CUTLASS_INCLUDE)
+        else
+            -- 默认路径或环境变量
+            add_cuflags("-I/home/qy/xiaogq/cutlass/include")
+        end
         if CUDNN_ROOT ~= nil then
             add_linkdirs(CUDNN_ROOT .. "/lib")
         end
