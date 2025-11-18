@@ -1,8 +1,6 @@
 from infinicore.lib import _infinicore
 from infinicore.tensor import Tensor
 
-__all__ = ["rms_norm"]
-
 
 def rms_norm(
     input: Tensor,

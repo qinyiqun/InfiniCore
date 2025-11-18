@@ -157,5 +157,5 @@ def from_torch(torch_tensor) -> Tensor:
             dtype=infini_type._underlying,
             device=infini_device._underlying,
         ),
-        torch_ref=torch_tensor,
+        _torch_ref=torch_tensor,
     )

@@ -1,8 +1,6 @@
 from infinicore.lib import _infinicore
 from infinicore.tensor import Tensor
 
-__all__ = ["causal_softmax"]
-
 
 def causal_softmax(input: Tensor, out=None) -> Tensor:
     r"""Apply a causal softmax function."""
