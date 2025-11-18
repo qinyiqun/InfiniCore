@@ -2,8 +2,6 @@ import infinicore
 from infinicore.lib import _infinicore
 from infinicore.tensor import Tensor
 
-__all__ = ["silu"]
-
 
 def silu(input: Tensor, inplace: bool = False, *, out=None) -> Tensor:
     r"""Apply the Sigmoid Linear Unit (SiLU) function, element-wise."""

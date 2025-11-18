@@ -1,8 +1,6 @@
 from infinicore.lib import _infinicore
 from infinicore.tensor import Tensor
 
-__all__ = ["embedding"]
-
 
 def embedding(
     input: Tensor,
