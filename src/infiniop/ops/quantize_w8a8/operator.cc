@@ -2,7 +2,7 @@
 #include "../../handle.h"
 #include "infiniop/ops/quantize_w8a8.h"
 
-#ifdef ENABLE_NVIDIA_API
+#if defined(ENABLE_NVIDIA_API) || defined(ENABLE_QY_API)
 #include "nvidia/quantize_w8a8_nvidia.cuh"
 #endif
 
@@ -27,6 +27,9 @@ __C infiniStatus_t infiniopCreateQuantizeW8A8Descriptor(infiniopHandle_t handle,
 #ifdef ENABLE_NVIDIA_API
         CREATE(INFINI_DEVICE_NVIDIA, nvidia)
 #endif
+#ifdef ENABLE_QY_API
+        CREATE(INFINI_DEVICE_QY, nvidia)
+#endif
     default:
         return INFINI_STATUS_DEVICE_TYPE_NOT_SUPPORTED;
     }
@@ -41,6 +44,9 @@ __C infiniStatus_t infiniopGetQuantizeW8A8WorkspaceSize(infiniopQuantizeW8A8Desc
         return INFINI_STATUS_SUCCESS;
 #ifdef ENABLE_NVIDIA_API
         GET(INFINI_DEVICE_NVIDIA, nvidia)
+#endif
+#ifdef ENABLE_QY_API
+        GET(INFINI_DEVICE_QY, nvidia)
 #endif
     default:
         return INFINI_STATUS_DEVICE_TYPE_NOT_SUPPORTED;
@@ -64,6 +70,9 @@ __C infiniStatus_t infiniopQuantizeW8A8(infiniopQuantizeW8A8Descriptor_t desc,
     switch (desc->device_type) {
 #ifdef ENABLE_NVIDIA_API
         QUANT(INFINI_DEVICE_NVIDIA, nvidia)
+#endif
+#ifdef ENABLE_QY_API
+        QUANT(INFINI_DEVICE_QY, nvidia)
 #endif
     default:
         return INFINI_STATUS_DEVICE_TYPE_NOT_SUPPORTED;
@@ -91,6 +100,9 @@ __C infiniStatus_t infiniopQuantizeLinearW8A8(infiniopQuantizeW8A8Descriptor_t d
 #ifdef ENABLE_NVIDIA_API
         CACULATE(INFINI_DEVICE_NVIDIA, nvidia)
 #endif
+#ifdef ENABLE_QY_API
+        CACULATE(INFINI_DEVICE_QY, nvidia)
+#endif
     default:
         return INFINI_STATUS_DEVICE_TYPE_NOT_SUPPORTED;
     }
@@ -106,6 +118,9 @@ __C infiniStatus_t infiniopDestroyQuantizeW8A8Descriptor(infiniopQuantizeW8A8Des
     switch (desc->device_type) {
 #ifdef ENABLE_NVIDIA_API
         DESTROY(INFINI_DEVICE_NVIDIA, nvidia)
+#endif
+#ifdef ENABLE_QY_API
+        DESTROY(INFINI_DEVICE_QY, nvidia)
 #endif
     default:
         return INFINI_STATUS_DEVICE_TYPE_NOT_SUPPORTED;

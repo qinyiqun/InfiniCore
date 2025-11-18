@@ -52,7 +52,7 @@ target("infiniop-nvidia")
             add_cuflags("-I" .. CUTLASS_INCLUDE)
         else
             -- 默认路径或环境变量
-            add_cuflags("-I/home/xiaoguangqiang/cutlass/include")
+            add_cuflags("-I/data/shared/xiaogq/cutlass/include")
         end
         if CUDNN_ROOT ~= nil then
             add_linkdirs(CUDNN_ROOT .. "/lib")
