@@ -35,6 +35,20 @@ class device:
     def __str__(self):
         return f"{self.type}{f':{self.index}' if self.index is not None else ''}"
 
+    def __eq__(self, other):
+        """
+        Compare two device objects for equality.
+
+        Args:
+            other: The object to compare with
+
+        Returns:
+            bool: True if both objects are device instances with the same type and index
+        """
+        if not isinstance(other, device):
+            return False
+        return self.type == other.type and self.index == other.index
+
     @staticmethod
     def _to_infinicore_device(type, index):
         all_device_types = tuple(_infinicore.Device.Type.__members__.values())[:-1]
