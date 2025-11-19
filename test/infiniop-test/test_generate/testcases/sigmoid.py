@@ -3,11 +3,18 @@ from numpy.lib.stride_tricks import as_strided
 import gguf
 from typing import List
 
-from .. import InfiniopTestWriter, InfiniopTestCase, np_dtype_to_ggml, gguf_strides, contiguous_gguf_strides, process_zero_stride_tensor
+from .. import (
+    InfiniopTestWriter,
+    InfiniopTestCase,
+    np_dtype_to_ggml,
+    gguf_strides,
+    contiguous_gguf_strides,
+    process_zero_stride_tensor,
+)
 
 
 def sigmoid(
-        x: np.ndarray,
+    x: np.ndarray,
 ):
     return 1 / (1 + np.exp(-x))
 
@@ -45,13 +52,13 @@ def process_tensor(a, stride_a=None):
 
 class SigmoidTestCase(InfiniopTestCase):
     def __init__(
-            self,
-            x: np.ndarray,
-            shape_x: List[int] | None,
-            stride_x: List[int] | None,
-            y: np.ndarray,
-            shape_y: List[int] | None,
-            stride_y: List[int] | None,
+        self,
+        x: np.ndarray,
+        shape_x: List[int] | None,
+        stride_x: List[int] | None,
+        y: np.ndarray,
+        shape_y: List[int] | None,
+        stride_y: List[int] | None,
     ):
         super().__init__("sigmoid")
         self.x = x
@@ -71,11 +78,19 @@ class SigmoidTestCase(InfiniopTestCase):
             test_writer.add_array(test_writer.gguf_key("y.shape"), self.shape_y)
 
         if self.stride_x is not None:
-            test_writer.add_array(test_writer.gguf_key("x.strides"), gguf_strides(*self.stride_x))
+            test_writer.add_array(
+                test_writer.gguf_key("x.strides"), gguf_strides(*self.stride_x)
+            )
 
         test_writer.add_array(
             test_writer.gguf_key("y.strides"),
-            gguf_strides(*self.stride_y if self.stride_y is not None else contiguous_gguf_strides(self.shape_y))
+            gguf_strides(
+                *(
+                    self.stride_y
+                    if self.stride_y is not None
+                    else contiguous_gguf_strides(self.shape_y)
+                )
+            ),
         )
 
         test_writer.add_tensor(
@@ -89,7 +104,9 @@ class SigmoidTestCase(InfiniopTestCase):
         if (self.stride_x is not None) and (0 in self.stride_x):
             typesize = np.dtype(input_x.dtype).itemsize
             new_strides_bytes = tuple(x * typesize for x in self.stride_x)
-            input_x = as_strided(x=input_x, shape=self.shape_x, strides=new_strides_bytes)
+            input_x = as_strided(
+                x=input_x, shape=self.shape_x, strides=new_strides_bytes
+            )
 
         ans = sigmoid(input_x)
 
@@ -98,7 +115,7 @@ class SigmoidTestCase(InfiniopTestCase):
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_writer = InfiniopTestWriter("sigmoid.gguf")
 
     test_cases = []
@@ -123,12 +140,14 @@ if __name__ == '__main__':
             y = np.empty(tuple(0 for _ in shape), dtype=dtype)
 
             x = process_zero_stride_tensor(x, stride_x)
-            test_case = SigmoidTestCase(x=x,
-                                        shape_x=shape,
-                                        stride_x=stride_x,
-                                        y=y,
-                                        shape_y=shape,
-                                        stride_y=stride_y)
+            test_case = SigmoidTestCase(
+                x=x,
+                shape_x=shape,
+                stride_x=stride_x,
+                y=y,
+                shape_y=shape,
+                stride_y=stride_y,
+            )
 
             test_cases.append(test_case)
 

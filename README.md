@@ -99,6 +99,7 @@ python scripts/install.py [XMAKE_CONFIG_FLAGS]
 | `--metax-gpu=[y\|n]`     | 是否编译沐曦 GPU 接口实现         | n
 | `--moore-gpu=[y\|n]`     | 是否编译摩尔线程 GPU 接口实现     | n
 | `--iluvatar-gpu=[y\|n]`  | 是否编译沐曦 GPU 接口实现         | n
+| `--qy-gpu=[y\|n]`        | 是否编译QY GPU 接口实现           | n
 | `--hygon-dcu=[y\|n]`     | 是否编译海光 DCU 接口实现         | n
 | `--kunlun-xpu=[y\|n]`    | 是否编译昆仑 XPU 接口实现         | n
 | `--ninetoothed=[y\|n]`   | 是否编译九齿实现                 | n
@@ -139,6 +140,9 @@ python scripts/install.py [XMAKE_CONFIG_FLAGS]
      # window系统：--cuda="%CUDA_HOME%"
      # linux系统：--cuda=$CUDA_HOME
      xmake f --nv-gpu=true --cuda=$CUDA_HOME -cv
+
+     # QY
+     xmake f --qy-gpu=true --cuda=$CUDA_HOME -cv
 
      # 寒武纪
      xmake f --cambricon-mlu=true -cv

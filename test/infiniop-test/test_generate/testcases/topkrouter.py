@@ -3,7 +3,13 @@ from typing import List
 import torch
 import torch.nn as nn
 
-from .. import InfiniopTestWriter, InfiniopTestCase, np_dtype_to_ggml, gguf_strides, contiguous_gguf_strides
+from .. import (
+    InfiniopTestWriter,
+    InfiniopTestCase,
+    np_dtype_to_ggml,
+    gguf_strides,
+    contiguous_gguf_strides,
+)
 
 
 def random_tensor(shape: tuple, dtype: np.dtype) -> np.ndarray:
@@ -11,9 +17,9 @@ def random_tensor(shape: tuple, dtype: np.dtype) -> np.ndarray:
 
 
 class DeepseekV3TopkRouter(nn.Module):
-    def __init__(self, correction_bias,
-                 routed_scaling_factor: float,
-                 topk: int, config=None):
+    def __init__(
+        self, correction_bias, routed_scaling_factor: float, topk: int, config=None
+    ):
         super().__init__()
         self.config = config
         self.top_k = 8  # config.num_experts_per_tok
@@ -30,19 +36,29 @@ class DeepseekV3TopkRouter(nn.Module):
         # self.weight = torch.rand(256, 7168) * 2 - 1
 
         # self.register_buffer("e_score_correction_bias", torch.zeros(self.n_routed_experts))
-        self.e_score_correction_bias = torch.zeros(256, )
+        self.e_score_correction_bias = torch.zeros(
+            256,
+        )
         self.e_score_correction_bias[:] = correction_bias[:]
 
     @torch.no_grad()
     def get_topk_indices(self, scores):
-        scores_for_choice = scores.view(-1, self.n_routed_experts) + self.e_score_correction_bias.unsqueeze(0)  # Size([1, 256])
+        scores_for_choice = scores.view(
+            -1, self.n_routed_experts
+        ) + self.e_score_correction_bias.unsqueeze(
+            0
+        )  # Size([1, 256])
         group_scores = (
-            scores_for_choice.view(-1, self.n_group, self.n_routed_experts // self.n_group)
+            scores_for_choice.view(
+                -1, self.n_group, self.n_routed_experts // self.n_group
+            )
             .topk(2, dim=-1)[0]
             .sum(dim=-1)
         )
 
-        group_idx = torch.topk(group_scores, k=self.topk_group, dim=-1, sorted=True)[1]  # Size([1, 4])
+        group_idx = torch.topk(group_scores, k=self.topk_group, dim=-1, sorted=True)[
+            1
+        ]  # Size([1, 4])
         group_mask = torch.zeros_like(group_scores)  # Size([1, 8])
         group_mask.scatter_(1, group_idx, 1)  # Size([1, 8])
 
@@ -52,8 +68,12 @@ class DeepseekV3TopkRouter(nn.Module):
             .reshape(-1, self.n_routed_experts)
         )
 
-        scores_for_choice = scores_for_choice.masked_fill(~score_mask.bool(), 0.0)  # Size([1, 256])
-        topk_indices = torch.topk(scores_for_choice, k=self.top_k, dim=-1, sorted=True)[1]  # Size([1, 8])
+        scores_for_choice = scores_for_choice.masked_fill(
+            ~score_mask.bool(), 0.0
+        )  # Size([1, 256])
+        topk_indices = torch.topk(scores_for_choice, k=self.top_k, dim=-1, sorted=True)[
+            1
+        ]  # Size([1, 8])
 
         return topk_indices
 
@@ -74,37 +94,39 @@ class DeepseekV3TopkRouter(nn.Module):
         return topk_indices, topk_weights
 
 
-def python_topkrouter(x: np.ndarray,
-                      correction_bias: np.ndarray,
-                      routed_scaling_factor: float,
-                      topk: int):
+def python_topkrouter(
+    x: np.ndarray, correction_bias: np.ndarray, routed_scaling_factor: float, topk: int
+):
     x = torch.from_numpy(x)
     correction_bias = torch.from_numpy(correction_bias)
 
     router_logits = x
-    lable_indices, lable_values = DeepseekV3TopkRouter(correction_bias, routed_scaling_factor=routed_scaling_factor, topk=topk)(router_logits)
+    lable_indices, lable_values = DeepseekV3TopkRouter(
+        correction_bias, routed_scaling_factor=routed_scaling_factor, topk=topk
+    )(router_logits)
     lable_indices = lable_indices.to(torch.int32)
 
     return lable_values.numpy(), lable_indices.numpy()
 
 
 class TopkrouterTestCase(InfiniopTestCase):
-    def __init__(self,
-                 values: np.ndarray,  # 传出参数
-                 indices: np.ndarray,  # 传出参数
-                 x: np.ndarray,  # 传入参数
-                 correction_bias: np.ndarray,  # 传入参数
-                 routed_scaling_factor: float,
-                 topk: int,
-                 values_shape: List[int] | None,
-                 values_strides: List[int] | None,
-                 indices_shape: List[int] | None,
-                 indices_strides: List[int] | None,
-                 x_shape: List[int] | None,
-                 x_strides: List[int] | None,
-                 correction_bias_shape: List[int] | None,
-                 correction_bias_strides: List[int] | None,
-                 ):
+    def __init__(
+        self,
+        values: np.ndarray,  # 传出参数
+        indices: np.ndarray,  # 传出参数
+        x: np.ndarray,  # 传入参数
+        correction_bias: np.ndarray,  # 传入参数
+        routed_scaling_factor: float,
+        topk: int,
+        values_shape: List[int] | None,
+        values_strides: List[int] | None,
+        indices_shape: List[int] | None,
+        indices_strides: List[int] | None,
+        x_shape: List[int] | None,
+        x_strides: List[int] | None,
+        correction_bias_shape: List[int] | None,
+        correction_bias_strides: List[int] | None,
+    ):
         super().__init__("topkrouter")
         self.values = values
         self.indices = indices
@@ -128,47 +150,84 @@ class TopkrouterTestCase(InfiniopTestCase):
 
         if self.values_shape is not None:
             print("self.values_shape:  ", self.values_shape)
-            test_writer.add_array(test_writer.gguf_key("values.shape"), self.values_shape)
+            test_writer.add_array(
+                test_writer.gguf_key("values.shape"), self.values_shape
+            )
         if self.indices_shape is not None:
-            test_writer.add_array(test_writer.gguf_key("indices.shape"), self.indices_shape)
+            test_writer.add_array(
+                test_writer.gguf_key("indices.shape"), self.indices_shape
+            )
         if self.x_shape is not None:
             test_writer.add_array(test_writer.gguf_key("x.shape"), self.x_shape)
         if self.correction_bias_shape is not None:
-            test_writer.add_array(test_writer.gguf_key("correction_bias.shape"), self.correction_bias_shape)
+            test_writer.add_array(
+                test_writer.gguf_key("correction_bias.shape"),
+                self.correction_bias_shape,
+            )
 
         if self.x_strides is not None:
-            test_writer.add_array(test_writer.gguf_key("x.strides"), gguf_strides(*self.x_strides))
+            test_writer.add_array(
+                test_writer.gguf_key("x.strides"), gguf_strides(*self.x_strides)
+            )
         if self.correction_bias_strides is not None:
-            test_writer.add_array(test_writer.gguf_key("correction_bias_strides.strides"), gguf_strides(*self.correction_bias_strides))
+            test_writer.add_array(
+                test_writer.gguf_key("correction_bias_strides.strides"),
+                gguf_strides(*self.correction_bias_strides),
+            )
         test_writer.add_array(
             test_writer.gguf_key("values.strides"),
-            gguf_strides(*self.values_strides if self.values_strides is not None else contiguous_gguf_strides(self.values_shape))
+            gguf_strides(
+                *(
+                    self.values_strides
+                    if self.values_strides is not None
+                    else contiguous_gguf_strides(self.values_shape)
+                )
+            ),
         )
         test_writer.add_array(
             test_writer.gguf_key("indices.strides"),
-            gguf_strides(*self.indices_strides if self.indices_strides is not None else contiguous_gguf_strides(self.indices_shape))
+            gguf_strides(
+                *(
+                    self.indices_strides
+                    if self.indices_strides is not None
+                    else contiguous_gguf_strides(self.indices_shape)
+                )
+            ),
         )
 
-        test_writer.add_tensor(test_writer.gguf_key("values"),
-                               self.values,
-                               raw_dtype=np_dtype_to_ggml(self.values.dtype))
+        test_writer.add_tensor(
+            test_writer.gguf_key("values"),
+            self.values,
+            raw_dtype=np_dtype_to_ggml(self.values.dtype),
+        )
 
-        test_writer.add_tensor(test_writer.gguf_key("indices"),
-                               self.indices,
-                               raw_dtype=np_dtype_to_ggml(self.indices.dtype))
+        test_writer.add_tensor(
+            test_writer.gguf_key("indices"),
+            self.indices,
+            raw_dtype=np_dtype_to_ggml(self.indices.dtype),
+        )
 
-        test_writer.add_tensor(test_writer.gguf_key("x"),
-                               self.x,
-                               raw_dtype=np_dtype_to_ggml(self.x.dtype))
+        test_writer.add_tensor(
+            test_writer.gguf_key("x"), self.x, raw_dtype=np_dtype_to_ggml(self.x.dtype)
+        )
 
-        test_writer.add_tensor(test_writer.gguf_key("correction_bias"),
-                               self.correction_bias,
-                               raw_dtype=np_dtype_to_ggml(self.correction_bias.dtype))
+        test_writer.add_tensor(
+            test_writer.gguf_key("correction_bias"),
+            self.correction_bias,
+            raw_dtype=np_dtype_to_ggml(self.correction_bias.dtype),
+        )
 
-        test_writer.add_float32(test_writer.gguf_key("routed_scaling_factor"), self.routed_scaling_factor)
+        test_writer.add_float32(
+            test_writer.gguf_key("routed_scaling_factor"), self.routed_scaling_factor
+        )
         test_writer.add_int32(test_writer.gguf_key("topk"), self.topk)
 
-        lable_values, lable_indices = python_topkrouter(self.x.copy(), self.correction_bias.copy(), self.routed_scaling_factor, self.topk)
+        lable_values, lable_indices = python_topkrouter(
+            self.x.copy(),
+            self.correction_bias.copy(),
+            self.routed_scaling_factor,
+            self.topk,
+        )
 
         test_writer.add_tensor(
             test_writer.gguf_key("lable_values"),
@@ -178,7 +237,7 @@ class TopkrouterTestCase(InfiniopTestCase):
         test_writer.add_tensor(
             test_writer.gguf_key("lable_indices"),
             lable_indices,
-            raw_dtype=np_dtype_to_ggml(lable_indices.dtype)
+            raw_dtype=np_dtype_to_ggml(lable_indices.dtype),
         )
 
 
@@ -193,7 +252,14 @@ if __name__ == "__main__":
     ]
     _TENSOR_DTYPES_ = [np.float32, np.float16]
     for dtype in _TENSOR_DTYPES_:
-        for x_shape, x_strides, correction_bias_shape, b_stride, routed_scaling_factor, topk in _TEST_CASES_:
+        for (
+            x_shape,
+            x_strides,
+            correction_bias_shape,
+            b_stride,
+            routed_scaling_factor,
+            topk,
+        ) in _TEST_CASES_:
             ntoken = x_shape[0]
 
             values_indices_shape = (ntoken, topk)
