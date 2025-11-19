@@ -116,14 +116,14 @@ class OpTest(BaseOperatorTest):
         """PyTorch multi_margin_loss implementation with device handling"""
         return F.multi_margin_loss(*args, **kwargs)
 
-    # def infinicore_operator(self, *args, **kwargs):
-    #     """InfiniCore multi_margin_loss implementation"""
-    #     return None
+    def infinicore_operator(self, *args, **kwargs):
+        """InfiniCore multi_margin_loss implementation"""
+        return None
 
 
 def main():
     """Main entry point"""
-    runner = GenericTestRunner(MultiMarginLossOpTest)
+    runner = GenericTestRunner(OpTest)
     runner.run_and_exit()
 
 
