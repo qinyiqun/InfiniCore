@@ -16,8 +16,8 @@ infiniStatus_t calculate_layer_norm(
     const Tdata *bias) {
     //  -------------------------------- start: perform operator on CPU --------------------------------
 #pragma omp parallel for
-    for (size_t b = 0; b < info.input_shape[0] * info.input_shape[1]; b++) {
-        size_t b0 = b / info.input_shape[1], b1 = b % info.input_shape[1];
+    for (int b = 0; b < (int)(info.input_shape[0] * info.input_shape[1]); b++) {
+        int b0 = b / (int)info.input_shape[1], b1 = b % (int)info.input_shape[1];
         auto output_ptr = output + b0 * info.output_strides[0] + b1 * info.output_strides[1];
         auto input_ptr = input + b0 * info.input_strides[0] + b1 * info.input_strides[1];
         auto standard_ptr = input_standardization + b0 * info.input_standardization_strides[0] + b1 * info.input_standardization_strides[1];
