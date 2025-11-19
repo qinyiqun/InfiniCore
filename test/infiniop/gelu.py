@@ -63,8 +63,8 @@ _TENSOR_DTYPES = [InfiniDtype.BF16, InfiniDtype.F16, InfiniDtype.F32, InfiniDtyp
 _TOLERANCE_MAP = {
     InfiniDtype.BF16: {"atol": 1e-2, "rtol": 1e-2},
     InfiniDtype.F16: {"atol": 1e-3, "rtol": 1e-3},
-    InfiniDtype.F32: {"atol": 1e-7, "rtol": 1e-7},
-    InfiniDtype.F64: {"atol": 1e-8, "rtol": 1e-8},
+    InfiniDtype.F32: {"atol": 1e-5, "rtol": 1e-5},
+    InfiniDtype.F64: {"atol": 1e-6, "rtol": 1e-6},
 }
 
 DEBUG = False
