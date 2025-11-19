@@ -80,7 +80,7 @@ def parse_test_cases():
                     ),
                     comparison_target="out",
                     tolerance=tolerance,
-                    description=f"RandomSample - OUT",
+                    description=f"RandomSample - INPLACE(out)",
                 )
             )
 
