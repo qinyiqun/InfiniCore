@@ -70,9 +70,19 @@ class TestTensor(CTensor):
             else:
                 torch_shape.append(shape[i])
         if mode == "random":
-            self._torch_tensor = torch.rand(
-                torch_shape, dtype=to_torch_dtype(dt), device=torch_device_map[device]
-            )
+            # For integer types, use randint instead of rand
+            if dt in [InfiniDtype.I8, InfiniDtype.I16, InfiniDtype.I32, InfiniDtype.I64,
+                      InfiniDtype.U8, InfiniDtype.U16, InfiniDtype.U32, InfiniDtype.U64,
+                      InfiniDtype.BYTE, InfiniDtype.BOOL]:
+                randint_low = -2000000000 if randint_low is None else randint_low
+                randint_high = 2000000000 if randint_high is None else randint_high
+                self._torch_tensor = torch.randint(
+                    randint_low, randint_high, torch_shape, dtype=to_torch_dtype(dt), device=torch_device_map[device]
+                )
+            else:
+                self._torch_tensor = torch.rand(
+                    torch_shape, dtype=to_torch_dtype(dt), device=torch_device_map[device]
+                )
         elif mode == "zeros":
             self._torch_tensor = torch.zeros(
                 torch_shape, dtype=to_torch_dtype(dt), device=torch_device_map[device]

@@ -1,4 +1,5 @@
-from .base import TestConfig, TestRunner, TestCase, BaseOperatorTest
+from .base import TestConfig, TestRunner, BaseOperatorTest
+from .test_case import TestCase, TestResult
 from .benchmark import BenchmarkUtils, BenchmarkResult
 from .config import (
     get_args,
@@ -32,6 +33,7 @@ __all__ = [
     "TensorSpec",
     "TestCase",
     "TestConfig",
+    "TestResult",
     "TestRunner",
     # Core functions
     "compare_results",
