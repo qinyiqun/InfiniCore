@@ -14,11 +14,7 @@ public:
 
     template <typename T>
     T operator()(const T &x) const {
-        constexpr double Alpha = 0.7978845608028654;
-        constexpr double Beta = 0.044715;
-        double inner = x + Beta * x * x * x;
-        double tanh_term = std::tanh(Alpha * inner);
-        return static_cast<T>(0.5 * x * (1.0 + tanh_term));
+        return static_cast<T>(0.5 * x * (1 + erf(x / sqrt(2.0f))));
     }
 } GeluOp;
 

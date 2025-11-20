@@ -408,11 +408,6 @@ def get_args():
         action="store_true",
         help="Run HYGON DCU test",
     )
-    parser.add_argument(
-        "--qy",
-        action="store_true",
-        help="Run HYGON DCU test",
-    )
 
     return parser.parse_args()
 
