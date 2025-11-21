@@ -5,12 +5,12 @@
 #ifdef ENABLE_CPU_API
 #include "cpu/relu_cpu.h"
 #endif
-#if defined(ENABLE_QY_API)
-#include "nvidia/relu_nvidia.cuh"
-#elif defined(ENABLE_NVIDIA_API) || defined(ENABLE_ILUVATAR_API)
+#if defined(ENABLE_NVIDIA_API) || defined(ENABLE_ILUVATAR_API)
 #ifdef ENABLE_NINETOOTHED
 #include "nvidia/relu_nvidia.cuh"
 #endif
+#elif defined(ENABLE_QY_API)
+#include "nvidia/relu_nvidia.cuh"
 #endif
 #ifdef ENABLE_METAX_API
 #ifdef ENABLE_NINETOOTHED
