@@ -5,11 +5,7 @@
 #ifdef ENABLE_CPU_API
 #include "cpu/relu_cpu.h"
 #endif
-#if defined(ENABLE_NVIDIA_API) || defined(ENABLE_ILUVATAR_API)
-#ifdef ENABLE_NINETOOTHED
-#include "nvidia/relu_nvidia.cuh"
-#endif
-#elif defined(ENABLE_QY_API)
+#if defined(ENABLE_NVIDIA_API) || defined(ENABLE_ILUVATAR_API) || defined(ENABLE_QY_API)
 #include "nvidia/relu_nvidia.cuh"
 #endif
 #ifdef ENABLE_METAX_API
@@ -38,14 +34,10 @@ __C infiniStatus_t infiniopCreateReluDescriptor(
         CREATE(INFINI_DEVICE_CPU, cpu);
 #endif
 #ifdef ENABLE_NVIDIA_API
-#ifdef ENABLE_NINETOOTHED
         CREATE(INFINI_DEVICE_NVIDIA, nvidia);
 #endif
-#endif
 #ifdef ENABLE_ILUVATAR_API
-#ifdef ENABLE_NINETOOTHED
         CREATE(INFINI_DEVICE_ILUVATAR, nvidia);
-#endif
 #endif
 #ifdef ENABLE_QY_API
         CREATE(INFINI_DEVICE_QY, nvidia);
@@ -75,14 +67,10 @@ __C infiniStatus_t infiniopGetReluWorkspaceSize(infiniopReluDescriptor_t desc, s
         GET(INFINI_DEVICE_CPU, cpu)
 #endif
 #ifdef ENABLE_NVIDIA_API
-#ifdef ENABLE_NINETOOTHED
         GET(INFINI_DEVICE_NVIDIA, nvidia)
 #endif
-#endif
 #ifdef ENABLE_ILUVATAR_API
-#ifdef ENABLE_NINETOOTHED
         GET(INFINI_DEVICE_ILUVATAR, nvidia)
-#endif
 #endif
 #ifdef ENABLE_QY_API
         GET(INFINI_DEVICE_QY, nvidia)
@@ -119,14 +107,10 @@ __C infiniStatus_t infiniopRelu(
         CALCULATE(INFINI_DEVICE_CPU, cpu);
 #endif
 #ifdef ENABLE_NVIDIA_API
-#ifdef ENABLE_NINETOOTHED
         CALCULATE(INFINI_DEVICE_NVIDIA, nvidia);
 #endif
-#endif
 #ifdef ENABLE_ILUVATAR_API
-#ifdef ENABLE_NINETOOTHED
         CALCULATE(INFINI_DEVICE_ILUVATAR, nvidia);
-#endif
 #endif
 #ifdef ENABLE_QY_API
         CALCULATE(INFINI_DEVICE_QY, nvidia);
@@ -158,14 +142,10 @@ infiniopDestroyReluDescriptor(infiniopReluDescriptor_t desc) {
         DELETE(INFINI_DEVICE_CPU, cpu);
 #endif
 #ifdef ENABLE_NVIDIA_API
-#ifdef ENABLE_NINETOOTHED
         DELETE(INFINI_DEVICE_NVIDIA, nvidia);
 #endif
-#endif
 #ifdef ENABLE_ILUVATAR_API
-#ifdef ENABLE_NINETOOTHED
         DELETE(INFINI_DEVICE_ILUVATAR, nvidia);
-#endif
 #endif
 #ifdef ENABLE_QY_API
         DELETE(INFINI_DEVICE_QY, nvidia);
