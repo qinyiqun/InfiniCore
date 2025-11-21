@@ -179,16 +179,6 @@ def test(
         else None
     )
 
-    # torch_layer_norm(
-    #     output.torch_tensor(),
-    #     input_standardization.torch_tensor(),
-    #     input_std_deviation.torch_tensor(),
-    #     input.torch_tensor(),
-    #     weight.torch_tensor(),
-    #     bias.torch_tensor() if bias_exist else None,
-    #     eps,
-    #     bias_exist
-    # )
     layer_norm(
         output.torch_tensor(),
         input.torch_tensor(),
@@ -265,12 +255,6 @@ def test(
             atol=atol,
             rtol=rtol,
         )
-    # print('input:\n', input.torch_tensor(), '\n')
-    # print('weight:\n', weight.torch_tensor(), '\n')
-    # print('bias:\n', bias.torch_tensor(), '\n')
-    # print('output:\n', output.torch_tensor(), '\n', output.actual_tensor(), )
-    # print('input_standardization:\n', input_standardization.torch_tensor(), '\n', input_standardization.actual_tensor(), )
-    # print('input_std_deviation:\n', input_std_deviation.torch_tensor(), '\n', input_std_deviation.actual_tensor(), )
 
     assert torch.allclose(
         output.actual_tensor(), output.torch_tensor(), atol=atol, rtol=rtol

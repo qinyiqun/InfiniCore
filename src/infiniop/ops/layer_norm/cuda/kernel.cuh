@@ -1,7 +1,7 @@
 #ifndef __LAYER_NORM_KERNEL_CUH__
 #define __LAYER_NORM_KERNEL_CUH__
 #include <cub/block/block_reduce.cuh>
-//  ------------------------------- start: perform operator on CUDA --------------------------------
+
 template <unsigned int BLOCK_SIZE, typename Tdata, typename Tcompute>
 __device__ void layerNormKernel(
     Tdata *output,
@@ -43,7 +43,7 @@ __device__ void layerNormKernel(
         output_ptr[d] = x_standard * Tcompute(*(weight + d * weight_stride)) + (bias_exist ? Tcompute(*(bias + d * bias_stride)) : Tcompute(0));
     }
 }
-//  -------------------------------- end: perform operator on CUDA ---------------------------------
+
 template <typename T, int BLOCK_SIZE>
 __device__ void blockLayernormKernel(T *output, T const *input, T const *weight, T const *bias, float eps, int dimsize,
                                      const ptrdiff_t *output_strides,

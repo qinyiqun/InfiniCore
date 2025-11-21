@@ -14,7 +14,7 @@ infiniStatus_t calculate_layer_norm(
     const Tdata *input,
     const Tdata *weight,
     const Tdata *bias) {
-    //  -------------------------------- start: perform operator on CPU --------------------------------
+
 #pragma omp parallel for
     for (int b = 0; b < (int)(info.input_shape[0] * info.input_shape[1]); b++) {
         int b0 = b / (int)info.input_shape[1], b1 = b % (int)info.input_shape[1];
@@ -42,7 +42,7 @@ infiniStatus_t calculate_layer_norm(
                 x_standard * utils::cast<float>(*(weight + d * info.weight_strides[0])) + (info.bias_exist ? utils::cast<float>(*(bias + d * info.bias_strides[0])) : float(0)));
         }
     }
-    //  --------------------------------- end: perform operator on CPU ---------------------------------
+
     return INFINI_STATUS_SUCCESS;
 }
 
@@ -64,7 +64,6 @@ infiniStatus_t Descriptor::create(
     auto dtype = input_desc->dtype();
     CHECK_DTYPE(dtype, INFINI_DTYPE_F16, INFINI_DTYPE_F32, INFINI_DTYPE_BF16);
     size_t WorkSpaceSize = 0;
-    //  ---------------------- end: check data type and calculate workspace size -----------------------
 
     auto result = LayerNormInfo::createLayerNormInfo(
         output_desc,

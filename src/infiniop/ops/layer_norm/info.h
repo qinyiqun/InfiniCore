@@ -12,7 +12,6 @@ private:
     LayerNormInfo() = default;
 
 public:
-    //  ---------------------------- start: define member variables of Info ----------------------------
     infiniDtype_t dtype;
     size_t ndim;
     std::vector<size_t> input_shape;
@@ -27,8 +26,6 @@ public:
     float eps;
     bool bias_exist;
 
-    //  ----------------------------- end: define member variables of Info -----------------------------
-
     static utils::Result<LayerNormInfo> createLayerNormInfo(
         infiniopTensorDescriptor_t output_desc,
         infiniopTensorDescriptor_t input_standardization_desc,
@@ -37,7 +34,7 @@ public:
         infiniopTensorDescriptor_t weight_desc,
         infiniopTensorDescriptor_t bias_desc,
         float eps) {
-        //  ------------------------- start: check tensor shape and input validity -------------------------
+
         CHECK_SAME_SHAPE(
             output_desc->shape(), input_desc->shape(), input_standardization_desc->shape());
         size_t ndim = input_desc->ndim();
@@ -63,9 +60,8 @@ public:
                 input_std_deviation_desc->dim(i) == input_desc->dim(i),
                 INFINI_STATUS_BAD_TENSOR_SHAPE);
         }
-        //  -------------------------- end: check tensor shape and input validity --------------------------
+
         return utils::Result<LayerNormInfo>(LayerNormInfo{
-            //  ------------------------------ start: create an instance of Info -------------------------------
             output_desc->dtype(),
             ndim,
             input_desc->shape(),
@@ -78,9 +74,7 @@ public:
             weight_desc->strides(),
             bias_exist ? bias_desc->strides() : std::vector<ptrdiff_t>(),
             eps,
-            bias_exist
-            //  ------------------------------- end: create an instance of Info --------------------------------
-        });
+            bias_exist});
     }
 };
 } // namespace op::layer_norm
