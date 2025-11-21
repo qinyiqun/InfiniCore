@@ -10,7 +10,6 @@
 
 namespace op::layer_norm::nvidia {
 
-//  ---------------------- start: launchKernel: call kernel function of CUDA -----------------------
 template <unsigned int BLOCK_SIZE, typename Tdata, typename Tcompute>
 INFINIOP_CUDA_KERNEL launchKernel(
     Tdata *output,
@@ -45,7 +44,7 @@ INFINIOP_CUDA_KERNEL launchKernel(
         bias_stride,
         bias_exist);
 }
-//  ----------------------- end: launchKernel: call kernel function of CUDA ------------------------
+
 template <typename Tdata, unsigned int BLOCK_SIZE>
 INFINIOP_CUDA_KERNEL blockLayernorm(
     Tdata *output,
@@ -107,7 +106,7 @@ INFINIOP_CUDA_KERNEL warpLayernorm(
                                                            ndim,
                                                            bias_exist);
 }
-//  ----------------------------------- start: call launchKernel -----------------------------------
+
 template <unsigned int BLOCK_SIZE, typename Tdata>
 infiniStatus_t calculate_layer_norm(
     const LayerNormInfo &info,
@@ -177,25 +176,8 @@ infiniStatus_t calculate_layer_norm(
                                                  info.bias_exist);
     }
 
-    // launchKernel<1, Tdata, float><<<dim3(info.input_shape[0], info.input_shape[1]), 1, 0, stream>>>(
-    //     output,
-    //     input_standardization,
-    //     input_std_deviation,
-    //     input,
-    //     weight,
-    //     bias,
-    //     info.eps,
-    //     info.normalized_size,
-    //     output_strides_cuda,
-    //     input_standardization_strides_cuda,
-    //     input_std_deviation_strides_cuda,
-    //     input_strides_cuda,
-    //     info.weight_strides[0],
-    //     info.bias_exist ? info.bias_strides[0] : 0,
-    //     info.bias_exist);
     return INFINI_STATUS_SUCCESS;
 }
-//  ------------------------------------ end: call launchKernel ------------------------------------
 
 struct Descriptor::Opaque {
     std::shared_ptr<device::nvidia::Handle::Internal> internal;
@@ -216,11 +198,11 @@ infiniStatus_t Descriptor::create(
     infiniopTensorDescriptor_t bias_desc,
     float eps) {
     auto handle = reinterpret_cast<device::nvidia::Handle *>(handle_);
-    //  --------------------- start: check data type and calculate workspace size ----------------------
+
     auto dtype = output_desc->dtype();
     CHECK_DTYPE(dtype, INFINI_DTYPE_F16, INFINI_DTYPE_F32, INFINI_DTYPE_BF16);
     size_t WorkSpaceSize = output_desc->ndim() * (sizeof(ptrdiff_t) * 4 + sizeof(size_t));
-    //  ---------------------- end: check data type and calculate workspace size -----------------------
+
     auto result = LayerNormInfo::createLayerNormInfo(
         output_desc,
         input_standardization_desc,
