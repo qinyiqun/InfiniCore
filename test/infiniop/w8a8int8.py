@@ -111,8 +111,6 @@ def test(
     print(
         f"Testing Linear on {InfiniDeviceNames[device]} with x_shape:{x_shape}, w_shape:{w_shape}, symmetric:{symmetric}, inplace:{inplace} dtype:{InfiniDtypeNames[dtype]}"
     )
-    alpha = 1.0
-    beta = 0.0
     M, K = x_shape
     N = w_shape[0]
 

@@ -4,7 +4,7 @@
 #ifdef ENABLE_CUTLASS_API
 #include "int8_gemm_kernel.cuh"
 #endif
-#include "../cuda/kernel.cuh"
+#include "../cuda/per_channel_dequant_int8.cuh"
 #include "int8_gemm_nvidia.cuh"
 
 template <typename Tdata>
