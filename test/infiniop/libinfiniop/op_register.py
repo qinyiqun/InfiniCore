@@ -4,7 +4,7 @@ from .structs import (
     infiniopOperatorDescriptor_t,
 )
 
-from ctypes import c_int32, c_void_p, c_size_t, POINTER, c_float
+from ctypes import c_int32, c_void_p, c_size_t, POINTER, c_float, c_bool
 
 
 class OpRegister:
@@ -757,6 +757,43 @@ def per_channel_quant_int8_(lib):
 
     lib.infiniopDestroyPerChannelQuantI8Descriptor.restype = c_int32
     lib.infiniopDestroyPerChannelQuantI8Descriptor.argtypes = [
+        infiniopOperatorDescriptor_t,
+    ]
+
+
+@OpRegister.operator
+def per_tensor_quant_fp8_(lib):
+    lib.infiniopCreatePerTensorQuantF8Descriptor.restype = c_int32
+    lib.infiniopCreatePerTensorQuantF8Descriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        c_bool,
+    ]
+
+    lib.infiniopGetPerTensorQuantF8WorkspaceSize.restype = c_int32
+    lib.infiniopGetPerTensorQuantF8WorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]
+
+    lib.infiniopPerTensorQuantF8.restype = c_int32
+    lib.infiniopPerTensorQuantF8.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+
+    lib.infiniopDestroyPerTensorQuantF8Descriptor.restype = c_int32
+    lib.infiniopDestroyPerTensorQuantF8Descriptor.argtypes = [
         infiniopOperatorDescriptor_t,
     ]
 
