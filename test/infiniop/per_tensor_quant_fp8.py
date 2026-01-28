@@ -51,12 +51,14 @@ NUM_ITERATIONS = 1000
 
 
 FP8_E4M3_MAX = 448.0
+
+
 def per_tensor_quant_fp8_torch(x, symmetric):
     if symmetric == False:
         return
     else:
         absmax = x.flatten().abs().max()
-    
+
         if absmax == 0:
             scale = torch.tensor(1.0, device=x.device, dtype=torch.float32)
             q = torch.zeros_like(x, dtype=torch.float8_e4m3fn)
@@ -70,16 +72,13 @@ def per_tensor_quant_fp8_torch(x, symmetric):
         x_scaled = x * inv_scale
 
         # 4. clip 到 FP8 可表示范围
-        x_clamped = torch.clamp(
-            x_scaled,
-            -FP8_E4M3_MAX,
-            FP8_E4M3_MAX
-        )
+        x_clamped = torch.clamp(x_scaled, -FP8_E4M3_MAX, FP8_E4M3_MAX)
 
         # 5. cast to fp8 e4m3
         q = x_clamped.to(torch.float8_e4m3fn)
 
         return q, scale.float(), None
+
 
 def test(
     handle,
@@ -90,23 +89,22 @@ def test(
     dtype=InfiniDtype.F16,
     sync=None,
 ):
-    
+
     print(
         f"Testing Per Tensor Quant Fp8 on {InfiniDeviceNames[device]} with x_shape:{x_shape}, symmetric:{symmetric} , dtype:{InfiniDtypeNames[dtype]}"
     )
-    M, K = x_shape
-   
+
     x = TestTensor(x_shape, None, dtype, device)
     x_p, x_s, x_z = per_tensor_quant_fp8_torch(x.torch_tensor(), symmetric)
     x_packed = TestTensor(x_shape, None, InfiniDtype.F8, device, mode="zeros")
     if is_static == False:
-        x_scale = TestTensor((1, ), None, InfiniDtype.F32, device, mode="zeros")
+        x_scale = TestTensor((1,), None, InfiniDtype.F32, device, mode="zeros")
     else:
-        x_scale = TestTensor((1, ), None, InfiniDtype.F32, device)
+        x_scale = TestTensor((1,), None, InfiniDtype.F32, device)
     if symmetric:
         x_zero = None
     else:
-        x_zero = TestTensor((1, ), None, InfiniDtype.F32, device)
+        x_zero = TestTensor((1,), None, InfiniDtype.F32, device)
     if sync is not None:
         sync()
 
@@ -137,7 +135,7 @@ def test(
         )
     )
     workspace = TestWorkspace(workspace_size.value, x.device)
-    
+
     def lib_per_tensor_quant_fp8():
         check_error(
             LIBINFINIOP.infiniopPerTensorQuantF8(
@@ -153,7 +151,7 @@ def test(
         )
 
     lib_per_tensor_quant_fp8()
-    
+
     if sync is not None:
         sync()
 
@@ -163,17 +161,22 @@ def test(
         debug(x_scale.actual_tensor(), x_s, atol=atol, rtol=rtol)
         if symmetric == False:
             debug(x_zero.actual_tensor(), x_z, atol=atol, rtol=rtol)
-    
+
     # print(x_s)
     # print(x_packed.actual_tensor().float(), x_p.float())
     # print(x_packed.actual_tensor().float() - x_p.float())
     if symmetric:
-        assert (torch.allclose(x_packed.actual_tensor().float(), x_p.float(), atol=2, rtol=2) and 
-                torch.allclose(x_scale.actual_tensor(), x_s, atol=atol, rtol=rtol))
+        assert torch.allclose(
+            x_packed.actual_tensor().float(), x_p.float(), atol=2, rtol=2
+        ) and torch.allclose(x_scale.actual_tensor(), x_s, atol=atol, rtol=rtol)
     else:
-        assert (torch.allclose(x_packed.actual_tensor().float(), x_p.float(), atol=2, rtol=2) and 
-                torch.allclose(x_scale.actual_tensor(), x_s, atol=atol, rtol=rtol) and
-                torch.allclose(x_zero.actual_tensor(), x_z, atol=atol, rtol=rtol))
+        assert (
+            torch.allclose(
+                x_packed.actual_tensor().float(), x_p.float(), atol=2, rtol=2
+            )
+            and torch.allclose(x_scale.actual_tensor(), x_s, atol=atol, rtol=rtol)
+            and torch.allclose(x_zero.actual_tensor(), x_z, atol=atol, rtol=rtol)
+        )
 
     # Profiling workflow
     if PROFILE:
@@ -196,5 +199,5 @@ if __name__ == "__main__":
 
     for device in get_test_devices(args):
         test_operator(device, test, _TEST_CASES, _TENSOR_DTYPES)
-    
+
     print("\033[92mTest passed!\033[0m")

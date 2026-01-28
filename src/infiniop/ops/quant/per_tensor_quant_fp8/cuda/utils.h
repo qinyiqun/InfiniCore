@@ -338,7 +338,7 @@ inline bool getEnvEnablePDL() {
 
 #define DISPATCH_FLOAT_TYPES(TYPE, NAME, ...) AT_DISPATCH_SWITCH(TYPE, NAME, DISPATCH_CASE_FLOAT_TYPES(__VA_ARGS__))
 
-#define CEILDIV(x, y) (((x) + (y) - 1) / (y))
+#define CEILDIV(x, y) (((x) + (y)-1) / (y))
 
 #ifndef USE_ROCM
 #define WARP_SIZE 32
