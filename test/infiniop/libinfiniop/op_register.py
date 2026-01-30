@@ -799,6 +799,42 @@ def per_tensor_quant_fp8_(lib):
 
 
 @OpRegister.operator
+def per_token_quant_fp8_(lib):
+    lib.infiniopCreatePerTokenQuantF8Descriptor.restype = c_int32
+    lib.infiniopCreatePerTokenQuantF8Descriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+    ]
+
+    lib.infiniopGetPerTokenQuantF8WorkspaceSize.restype = c_int32
+    lib.infiniopGetPerTokenQuantF8WorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]
+
+    lib.infiniopPerTokenQuantF8.restype = c_int32
+    lib.infiniopPerTokenQuantF8.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+
+    lib.infiniopDestroyPerTokenQuantF8Descriptor.restype = c_int32
+    lib.infiniopDestroyPerTokenQuantF8Descriptor.argtypes = [
+        infiniopOperatorDescriptor_t,
+    ]
+
+
+@OpRegister.operator
 def softplus_(lib):
     lib.infiniopCreateSoftplusDescriptor.restype = c_int32
     lib.infiniopCreateSoftplusDescriptor.argtypes = [

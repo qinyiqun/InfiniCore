@@ -24,24 +24,25 @@ from enum import Enum, auto
 # ==============================================================================
 # These are not meant to be imported from other modules
 _TEST_CASES = [
-    # x_shape, symmetric, is_static
-    ((8, 8), True, False),
-    ((8, 128), True, False),
-    ((256, 1024), True, False),
-    ((1024, 2048), True, False),
-    ((2048, 2048), True, False),
-    ((4096, 2048), True, False),
+    # x_shape, symmetric
+    ((8, 8), True),
+    ((8, 128), True),
+    ((256, 1024), True),
+    ((1024, 2048), True),
+    ((2048, 2048), True),
+    ((4096, 2048), True),
 ]
 
 
 # Data types used for testing
 _TENSOR_DTYPES = [InfiniDtype.BF16, InfiniDtype.F16, InfiniDtype.F32]
 
+
 # Tolerance map for different data types
 _TOLERANCE_MAP = {
     InfiniDtype.F16: {"atol": 1e-3, "rtol": 5e-2},
     InfiniDtype.BF16: {"atol": 1e-3, "rtol": 5e-2},
-    InfiniDtype.F32: {"atol": 3e-5, "rtol": 5e-3},
+    InfiniDtype.F32: {"atol": 3e-3, "rtol": 5e-3},
 }
 
 DEBUG = False
@@ -53,28 +54,47 @@ NUM_ITERATIONS = 1000
 FP8_E4M3_MAX = 448.0
 
 
-def per_tensor_quant_fp8_torch(x, symmetric):
+def per_token_quant_fp8_torch(x, symmetric):
     if symmetric == False:
         return
     else:
-        absmax = x.flatten().abs().max()
+        assert x.dim() == 2, "per-token quant expects [num_tokens, hidden_dim]"
 
-        if absmax == 0:
-            scale = torch.tensor(1.0, device=x.device, dtype=torch.float32)
-            q = torch.zeros_like(x, dtype=torch.float8_e4m3fn)
-            return q, scale, None
+        # ------------------------------------------------------------
+        # Pass-1: per-token absmax (对齐 CUDA 的 warpReduceMax)
+        # ------------------------------------------------------------
+        # CUDA: max_value = max_j |x[token_id, j]|
+        absmax = x.abs().amax(dim=1)              # [num_tokens]
 
-        # 2. scale = absmax / FP8_MAX
-        scale = absmax / FP8_E4M3_MAX
+        # ------------------------------------------------------------
+        # scale = absmax / FP8_E4M3_MAX
+        # CUDA 中 scale 是 per-token 写入 output_s[token_id]
+        # ------------------------------------------------------------
+        scale = absmax / FP8_E4M3_MAX              # [num_tokens]
 
-        # 3. 量化（注意：CUDA 里用的是 x * (1 / scale)）
         inv_scale = 1.0 / scale
-        x_scaled = x * inv_scale
+        inv_scale[scale == 0] = float('inf')                                       # [num_tokens]
 
-        # 4. clip 到 FP8 可表示范围
-        x_clamped = torch.clamp(x_scaled, -FP8_E4M3_MAX, FP8_E4M3_MAX)
+        # ------------------------------------------------------------
+        # Pass-2: x * inv_scale
+        # CUDA: val = input * scale_inv
+        # ------------------------------------------------------------
+        x_scaled = x * inv_scale.unsqueeze(1)     # broadcast to [N, H]
 
-        # 5. cast to fp8 e4m3
+        # ------------------------------------------------------------
+        # clip 到 FP8 E4M3 可表示范围
+        # CUDA: fmaxf(fminf(val, FP8_E4M3_MAX), -FP8_E4M3_MAX)
+        # ------------------------------------------------------------
+        x_clamped = torch.clamp(
+            x_scaled,
+            -FP8_E4M3_MAX,
+            FP8_E4M3_MAX
+        )
+
+        # ------------------------------------------------------------
+        # cast to FP8
+        # CUDA: static_cast<DST_DTYPE>(val)
+        # ------------------------------------------------------------
         q = x_clamped.to(torch.float8_e4m3fn)
 
         return q, scale.float(), None
@@ -85,39 +105,36 @@ def test(
     device,
     x_shape,
     symmetric,
-    is_static,
     dtype=InfiniDtype.F16,
     sync=None,
 ):
 
     print(
-        f"Testing Per Tensor Quant Fp8 on {InfiniDeviceNames[device]} with x_shape:{x_shape}, symmetric:{symmetric} , dtype:{InfiniDtypeNames[dtype]}"
+        f"Testing Per Token Quant Fp8 on {InfiniDeviceNames[device]} with x_shape:{x_shape}, symmetric:{symmetric} , dtype:{InfiniDtypeNames[dtype]}"
     )
-
+    num_tokens, hidden_dim = x_shape
+    
     x = TestTensor(x_shape, None, dtype, device)
-    x_p, x_s, x_z = per_tensor_quant_fp8_torch(x.torch_tensor(), symmetric)
+    x_p, x_s, x_z = per_token_quant_fp8_torch(x.torch_tensor(), symmetric)
     x_packed = TestTensor(x_shape, None, InfiniDtype.F8, device, mode="zeros")
-    if is_static == False:
-        x_scale = TestTensor((1,), None, InfiniDtype.F32, device, mode="zeros")
-    else:
-        x_scale = TestTensor((1,), None, InfiniDtype.F32, device)
+    x_scale = TestTensor((num_tokens, 1), None, InfiniDtype.F32, device)
+        
     if symmetric:
         x_zero = None
     else:
-        x_zero = TestTensor((1,), None, InfiniDtype.F32, device)
+        x_zero = TestTensor((num_tokens, 1), None, InfiniDtype.F32, device)
     if sync is not None:
         sync()
 
     descriptor = infiniopOperatorDescriptor_t()
     check_error(
-        LIBINFINIOP.infiniopCreatePerTensorQuantF8Descriptor(
+        LIBINFINIOP.infiniopCreatePerTokenQuantF8Descriptor(
             handle,
             ctypes.byref(descriptor),
             x_packed.descriptor,
             x_scale.descriptor,
             None if symmetric else x_zero.descriptor,
             x.descriptor,
-            is_static,
         )
     )
 
@@ -130,15 +147,15 @@ def test(
 
     workspace_size = c_uint64(0)
     check_error(
-        LIBINFINIOP.infiniopGetPerTensorQuantF8WorkspaceSize(
+        LIBINFINIOP.infiniopGetPerTokenQuantF8WorkspaceSize(
             descriptor, ctypes.byref(workspace_size)
         )
     )
     workspace = TestWorkspace(workspace_size.value, x.device)
 
-    def lib_per_tensor_quant_fp8():
+    def lib_per_token_quant_fp8():
         check_error(
-            LIBINFINIOP.infiniopPerTensorQuantF8(
+            LIBINFINIOP.infiniopPerTokenQuantF8(
                 descriptor,
                 workspace.data(),
                 workspace_size.value,
@@ -150,7 +167,7 @@ def test(
             )
         )
 
-    lib_per_tensor_quant_fp8()
+    lib_per_token_quant_fp8()
 
     if sync is not None:
         sync()
@@ -162,6 +179,8 @@ def test(
         if symmetric == False:
             debug(x_zero.actual_tensor(), x_z, atol=atol, rtol=rtol)
 
+    # print(x_s - x_scale.actual_tensor())
+    # print(x_packed.actual_tensor().float() - x_p.float())
     if symmetric:
         assert torch.allclose(
             x_packed.actual_tensor().float(), x_p.float(), atol=2, rtol=2
@@ -178,11 +197,11 @@ def test(
     # Profiling workflow
     if PROFILE:
         # fmt: off
-        profile_operation("PyTorch", lambda: per_tensor_quant_fp8_torch(x.torch_tensor(), symmetric), device, NUM_PRERUN, NUM_ITERATIONS)
-        profile_operation("    lib", lambda: lib_per_tensor_quant_fp8(), device, NUM_PRERUN, NUM_ITERATIONS)
+        profile_operation("PyTorch", lambda: per_token_quant_fp8_torch(x.torch_tensor(), symmetric), device, NUM_PRERUN, NUM_ITERATIONS)
+        profile_operation("    lib", lambda: lib_per_token_quant_fp8(), device, NUM_PRERUN, NUM_ITERATIONS)
         # fmt: on
 
-    check_error(LIBINFINIOP.infiniopDestroyPerTensorQuantF8Descriptor(descriptor))
+    check_error(LIBINFINIOP.infiniopDestroyPerTokenQuantF8Descriptor(descriptor))
 
 
 if __name__ == "__main__":

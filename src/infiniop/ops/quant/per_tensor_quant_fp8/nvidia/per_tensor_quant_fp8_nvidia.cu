@@ -14,10 +14,10 @@ INFINIOP_CUDA_KERNEL blockPerTensorAbsmaxSym(
         x, x_scale, num_elements);
 }
 
-template <typename Tdata, unsigned int BLOCK_SIZE>
+template <typename Tdata, typename DST_DTYPE, unsigned int BLOCK_SIZE>
 INFINIOP_CUDA_KERNEL blockPerTensorQuantF8Sym(
-    __nv_fp8_e4m3 *x_packed, float *x_scale, const Tdata *x, const int64_t num_elements) {
-    per_tensor_quant_fp8_kernel<Tdata, __nv_fp8_e4m3>(
+    DST_DTYPE *x_packed, float *x_scale, const Tdata *x, const int64_t num_elements) {
+    per_tensor_quant_fp8_kernel<Tdata, DST_DTYPE>(
         x,
         x_packed,
         x_scale,
@@ -57,15 +57,22 @@ template <unsigned int BLOCK_SIZE, typename Tdata>
 infiniStatus_t per_tensor_quant_fp8Kernel(const PerTensorQuantF8Info &info, __nv_fp8_e4m3 *x_packed, float *x_scale, float *x_zero, const Tdata *x, cudaStream_t stream) {
     const uint64_t num_elements = info.num_elements;
     bool is_static = info.is_static;
-    int num_blocks = (static_cast<int>(num_elements) + BLOCK_SIZE - 1) / BLOCK_SIZE;
+#ifdef ENABLE_NVIDIA_API
+    constexpr unsigned int block_size = 256;
+#else
+    constexpr unsigned int block_size = BLOCK_SIZE;
+#endif
+    int num_blocks = (static_cast<int>(num_elements) + block_size - 1) / block_size;
 
+    dim3 grid(num_blocks);
+    dim3 block(block_size);
     if (x_zero == nullptr) {
         if (is_static == false) {
-            blockPerTensorAbsmaxSym<Tdata, BLOCK_SIZE>
-                <<<num_blocks, BLOCK_SIZE, 0, stream>>>(x_scale, x, num_elements);
+            blockPerTensorAbsmaxSym<Tdata, block_size>
+                <<<grid, block, 0, stream>>>(x_scale, x, num_elements);
         }
-        blockPerTensorQuantF8Sym<Tdata, BLOCK_SIZE>
-            <<<num_blocks, BLOCK_SIZE, 0, stream>>>(x_packed, x_scale, x, num_elements);
+        blockPerTensorQuantF8Sym<Tdata, __nv_fp8_e4m3, block_size>
+            <<<grid, block, 0, stream>>>(x_packed, x_scale, x, num_elements);
     } else {
         return INFINI_STATUS_BAD_PARAM;
     }
