@@ -474,4 +474,3 @@ inline uint32_t next_pow2(uint32_t x) noexcept {
 #else
 #define SGLANG_LDG(arg) *(arg)
 #endif
-
