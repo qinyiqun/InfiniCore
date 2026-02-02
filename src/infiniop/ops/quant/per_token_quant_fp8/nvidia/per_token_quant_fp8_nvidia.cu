@@ -71,9 +71,14 @@ infiniStatus_t per_token_quant_fp8Kernel(const PerTokenQuantF8Info &info, __nv_f
     const int64_t hidden_dim = info.hidden_dim;
     const int64_t num_tokens = info.num_tokens;
 
-    int sm_count = getSMCount();
     const int TOKENS_PER_CTA = 8;
+#ifdef ENABLE_NVIDIA_API
+    int sm_count = getSMCount();
     const bool use_warp_kernel = (num_tokens >= sm_count * 2 * TOKENS_PER_CTA);
+#else
+    const bool use_warp_kernel = (hidden_dim < 1024);
+#endif
+
     const bool use_vec16 = (hidden_dim % 16 == 0);
     const bool use_vec8 = (hidden_dim % 8 == 0);
 

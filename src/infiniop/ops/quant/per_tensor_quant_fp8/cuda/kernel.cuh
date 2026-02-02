@@ -4,7 +4,7 @@
 #ifdef ENABLE_NVIDIA_API
 #include <flashinfer/vec_dtypes.cuh>
 #endif
-#include "utils.h"
+#include "../../utils.h"
 #include <c10/util/Float8_e4m3fn.h>
 #include <cmath>
 #include <cub/block/block_reduce.cuh>
