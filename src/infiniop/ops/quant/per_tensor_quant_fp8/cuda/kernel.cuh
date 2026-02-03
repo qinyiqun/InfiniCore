@@ -13,7 +13,7 @@ template <typename T, unsigned int BLOCK_SIZE>
 __device__ void
 per_tensor_absmax_kernel(const T *__restrict__ input, float *__restrict__ output_s, const int64_t num_elements) {
 #ifdef ENABLE_NVIDIA_API
-    float max_value = 0.0f;
+    float max_value = -__FLT_MAX__;
     unsigned int tid = threadIdx.x;
     unsigned int gid = blockIdx.x * blockDim.x + threadIdx.x;
     const int grid_size = blockDim.x * gridDim.x;
@@ -46,13 +46,16 @@ per_tensor_absmax_kernel(const T *__restrict__ input, float *__restrict__ output
         atomicMaxFloat(output_s, max_value / FP8_E4M3_MAX);
     }
 #elif defined ENABLE_QY_API
-    unsigned int tid = threadIdx.x + blockIdx.x * blockDim.x;
+    unsigned int tid = threadIdx.x;
+    unsigned int gid = blockIdx.x * blockDim.x + threadIdx.x;
+    const int grid_size = blockDim.x * gridDim.x;
+
     float thread_max = -__FLT_MAX__;
-    for (int ind = threadIdx.x; ind < num_elements; ind += BLOCK_SIZE) {
+    for (int ind = gid; ind < num_elements; ind += grid_size) {
         thread_max = fmaxf(thread_max, fabsf((float)input[ind]));
     }
     float local_max = blockReduceMax(thread_max);
-    if (threadIdx.x == 0) {
+    if (tid == 0) {
         atomicMaxFloat(output_s, local_max / FP8_E4M3_MAX);
     }
 #endif
@@ -107,10 +110,11 @@ __device__ void per_tensor_quant_fp8_kernel(
 #endif
     }
 #elif defined ENABLE_QY_API
-    const int tid = threadIdx.x + blockIdx.x * blockDim.x;
+    const int gid = threadIdx.x + blockIdx.x * blockDim.x;
+    const int grid_size = blockDim.x * gridDim.x;
     const float scale_val = 1.0f / scale[0];
 
-    if (tid < num_elements) {
+    for (int tid = gid; tid < num_elements; tid += grid_size) {
         float val = fmax(-FP8_E4M3_MAX, fmin(static_cast<float>(input[tid]) * scale_val, FP8_E4M3_MAX));
 #if !defined(USE_ROCM) || defined(HIP_FP8_TYPE_E4M3)
         output[tid] = static_cast<DST_DTYPE>(val);

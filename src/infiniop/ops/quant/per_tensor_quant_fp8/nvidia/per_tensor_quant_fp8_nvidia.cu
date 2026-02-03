@@ -62,7 +62,7 @@ infiniStatus_t per_tensor_quant_fp8Kernel(const PerTensorQuantF8Info &info, __nv
 #else
     constexpr unsigned int block_size = BLOCK_SIZE;
 #endif
-    int num_blocks = (static_cast<int>(num_elements) + block_size - 1) / block_size;
+    int num_blocks = min((static_cast<int>(num_elements) + block_size - 1) / block_size, 1024);
 
     dim3 grid(num_blocks);
     dim3 block(block_size);
