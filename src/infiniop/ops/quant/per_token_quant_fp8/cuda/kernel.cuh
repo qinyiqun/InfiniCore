@@ -122,7 +122,7 @@ __device__ void per_token_quant_fp8_kernel(
 
     // ---- reduce max ----
     for (int ind = lane_id; ind < hidden_dim; ind += kWarpSize) {
-        float v = fabs((float)input[tid + ind]);
+        float v = fabsf((float)input[tid + ind]);
         max_data = fmaxf(max_data, v);
     }
     float warp_max = warpReduceMax(max_data);
@@ -240,7 +240,7 @@ __device__ void per_token_quant_fp8_small_batch_kernel(
     // ---- 2. reduce min ----
     float thread_max = -__FLT_MAX__;
     for (int ind = threadIdx.x; ind < hidden_dim; ind += BLOCK_SIZE) {
-        thread_max = fmaxf(thread_max, fabs((float)input[tid + ind]));
+        thread_max = fmaxf(thread_max, fabsf((float)input[tid + ind]));
     }
     float local_max = BlockReduce(temp_storage).Reduce(thread_max, cub::Max());
 

@@ -47,10 +47,13 @@ per_tensor_absmax_kernel(const T *__restrict__ input, float *__restrict__ output
     }
 #elif defined ENABLE_QY_API
     unsigned int tid = threadIdx.x + blockIdx.x * blockDim.x;
-    float local_max = op::common_cuda::reduce_op::max<BLOCK_SIZE, T>(
-        input, num_elements);
-    if (tid == 0) {
-        output_s[0] = local_max / FP8_E4M3_MAX;
+    float thread_max = -__FLT_MAX__;
+    for (int ind = threadIdx.x; ind < num_elements; ind += BLOCK_SIZE) {
+        thread_max = fmaxf(thread_max, fabsf((float)input[ind]));
+    }
+    float local_max = blockReduceMax(thread_max);
+    if (threadIdx.x == 0) {
+        atomicMaxFloat(output_s, local_max / FP8_E4M3_MAX);
     }
 #endif
 }
