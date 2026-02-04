@@ -29,8 +29,8 @@ __C infiniStatus_t infiniopCreatePagedCachingDescriptor(
 #ifdef ENABLE_NVIDIA_API
         CREATE(INFINI_DEVICE_NVIDIA, nvidia)
 #endif
-#ifdef ENABLE_NVIDIA_API
-        CREATE(INFINI_DEVICE_NVIDIA, nvidia)
+#ifdef ENABLE_QY_API
+        CREATE(INFINI_DEVICE_QY, nvidia)
 #endif
 #ifdef ENABLE_METAX_API
         CREATE(INFINI_DEVICE_METAX, metax)

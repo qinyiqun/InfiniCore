@@ -36,6 +36,8 @@ public:
     ptrdiff_t block_table_batch_stride;
     ptrdiff_t cache_lens_stride;
 
+    size_t block_size;
+
     static utils::Result<PagedAttentionInfo> create(
         infiniopTensorDescriptor_t out_desc,
         infiniopTensorDescriptor_t q_desc,
@@ -112,7 +114,7 @@ public:
         const size_t head_size = q_shape[2];
 
         const size_t num_blocks = k_shape[0];
-        (void)num_blocks;
+
         const size_t page_block_size = k_shape[2];
         const size_t num_kv_heads = k_shape[1];
 
@@ -157,6 +159,8 @@ public:
         const ptrdiff_t block_table_batch_stride = block_tables_desc->stride(0);
         const ptrdiff_t cache_lens_stride = cache_lens_desc->stride(0);
 
+        size_t block_size = v_cache_desc->shape()[2];
+
         return utils::Result<PagedAttentionInfo>(PagedAttentionInfo{
             dtype,
             block_tables_dt,
@@ -177,6 +181,7 @@ public:
             o_stride,
             block_table_batch_stride,
             cache_lens_stride,
+            block_size,
         });
     }
 };
