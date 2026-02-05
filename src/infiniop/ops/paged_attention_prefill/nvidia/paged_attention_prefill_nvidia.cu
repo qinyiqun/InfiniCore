@@ -10,11 +10,17 @@
 
 // #include "paged_attention_prefill_fa2.cuh"
 #include "paged_attention_prefill_nvidia.cuh"
+#include <float.h>
+#include <math.h>
 
+#ifdef ENABLE_NVIDIA_API
 #include "../cuda/kernel_v2.cuh"
+#elif defined ENABLE_QY_API
+#include "../cuda/kernel.cuh"
+#endif
 
 namespace op::paged_attention_prefill::nvidia {
-
+#ifdef ENABLE_NVIDIA_API
 namespace {
 constexpr size_t ceilDiv(size_t a, size_t b) {
     return (a + b - 1) / b;
@@ -1232,6 +1238,49 @@ infiniStatus_t launch_prefill_warpcta16(
     }
 }
 } // namespace
+#elif defined ENABLE_QY_API
+template <typename Tdata, typename Tcompute>
+infiniStatus_t launchPagedAttentionPrefill(
+    Tdata *out, const Tdata *q, const Tdata *k_cache, const Tdata *v_cache,
+    const int64_t *block_tables,
+    const int64_t *seq_lens,
+    const int64_t *cum_seqlens_q,
+    const float *alibi_slopes,
+    const size_t num_heads,
+    const size_t num_seqs,
+    const size_t num_kv_heads,
+    const float scale,
+    const size_t max_num_blocks_per_seq,
+    const size_t block_size,
+    const size_t total_q_tokens,
+    const size_t head_size,
+    const ptrdiff_t k_batch_stride,
+    const ptrdiff_t k_head_stride,
+    const ptrdiff_t q_stride,
+    const ptrdiff_t q_head_stride,
+    cudaStream_t stream) {
+
+    if (total_q_tokens == 0 || num_heads == 0) {
+        return INFINI_STATUS_BAD_TENSOR_SHAPE;
+    }
+
+    dim3 grid(total_q_tokens, num_heads);
+    dim3 block(head_size);
+
+    op::paged_attention_prefill::cuda::pagedAttentionPrefillKernel<Tdata, Tcompute>
+        <<<grid, block, 0, stream>>>(
+            out, q, k_cache, v_cache,
+            block_tables, seq_lens, cum_seqlens_q, alibi_slopes,
+            num_heads, num_kv_heads, scale,
+            max_num_blocks_per_seq, block_size,
+            k_batch_stride, k_head_stride,
+            q_stride, q_head_stride,
+            head_size,
+            num_seqs);
+
+    return INFINI_STATUS_SUCCESS;
+}
+#endif
 
 struct Descriptor::Opaque {
     std::shared_ptr<device::nvidia::Handle::Internal> internal;
@@ -1259,7 +1308,7 @@ infiniStatus_t Descriptor::create(
         block_tables_desc, total_kv_lens_desc, cum_seqlens_q_desc,
         alibi_slopes_desc, scale);
     CHECK_RESULT(info);
-
+#ifdef ENABLE_NVIDIA_API
     // Optional split-kv prefill requires workspace for partial (m, l, acc).
     // IMPORTANT: Unlike decode, prefill's total_q_tokens can be very large, so we must NOT reserve
     // a huge workspace unless the user explicitly enables split-kv.
@@ -1287,6 +1336,9 @@ infiniStatus_t Descriptor::create(
 
     const size_t workspace_bytes = splitkv_workspace_bytes;
     // const size_t workspace_bytes = splitkv_workspace_bytes + fa2_workspace_bytes;
+#elif defined ENABLE_QY_API
+    const size_t workspace_bytes = 0;
+#endif
 
     *desc_ptr = new Descriptor(
         new Opaque{reinterpret_cast<device::nvidia::Handle *>(handle)->internal()},
@@ -1304,7 +1356,7 @@ infiniStatus_t Descriptor::calculate(
     const void *alibi_slopes,
     void *stream_) const {
     auto stream = static_cast<cudaStream_t>(stream_);
-
+#ifdef ENABLE_NVIDIA_API
     const float *alibi_ptr = (alibi_slopes == nullptr) ? nullptr : static_cast<const float *>(alibi_slopes);
     const auto *total_kv_lens_i64 = static_cast<const int64_t *>(total_kv_lens);
     const auto *cu_seqlens_q_i64 = static_cast<const int64_t *>(cum_seqlens_q);
@@ -1545,6 +1597,30 @@ infiniStatus_t Descriptor::calculate(
     }
 
     return INFINI_STATUS_BAD_TENSOR_DTYPE;
+#elif defined ENABLE_QY_API
+#define LAUNCH_KERNEL(Tdata, Tcompute)                                                                 \
+    launchPagedAttentionPrefill<Tdata, Tcompute>(                                                      \
+        (Tdata *)out, (const Tdata *)q, (const Tdata *)k_cache, (const Tdata *)v_cache,                \
+        (const int64_t *)block_tables, (const int64_t *)total_kv_lens, (const int64_t *)cum_seqlens_q, \
+        (const float *)alibi_slopes,                                                                   \
+        _info.num_heads, _info.num_seqs, _info.num_kv_heads,                                           \
+        _info.scale, _info.max_num_blocks_per_seq,                                                     \
+        _info.page_block_size, _info.total_q_tokens,                                                   \
+        _info.head_size,                                                                               \
+        _info.k_batch_stride, _info.k_head_stride,                                                     \
+        _info.q_stride, _info.q_head_stride,                                                           \
+        stream)
+
+    if (_info.dtype == INFINI_DTYPE_F16) {
+        return LAUNCH_KERNEL(half, float);
+    } else if (_info.dtype == INFINI_DTYPE_BF16) {
+        return LAUNCH_KERNEL(__nv_bfloat16, float);
+    } else if (_info.dtype == INFINI_DTYPE_F32) {
+        return LAUNCH_KERNEL(float, float);
+    }
+
+    return INFINI_STATUS_BAD_TENSOR_DTYPE;
+#endif
 }
 
 } // namespace op::paged_attention_prefill::nvidia
