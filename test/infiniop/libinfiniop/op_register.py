@@ -907,6 +907,42 @@ def per_token_dequant_fp8_(lib):
 
 
 @OpRegister.operator
+def per_group_quant_fp4_(lib):
+    lib.infiniopCreatePerGroupQuantF4Descriptor.restype = c_int32
+    lib.infiniopCreatePerGroupQuantF4Descriptor.argtypes = [
+        infiniopHandle_t,
+        POINTER(infiniopOperatorDescriptor_t),
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+        infiniopTensorDescriptor_t,
+    ]
+
+    lib.infiniopGetPerGroupQuantF4WorkspaceSize.restype = c_int32
+    lib.infiniopGetPerGroupQuantF4WorkspaceSize.argtypes = [
+        infiniopOperatorDescriptor_t,
+        POINTER(c_size_t),
+    ]
+
+    lib.infiniopPerGroupQuantF4.restype = c_int32
+    lib.infiniopPerGroupQuantF4.argtypes = [
+        infiniopOperatorDescriptor_t,
+        c_void_p,
+        c_size_t,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+        c_void_p,
+    ]
+
+    lib.infiniopDestroyPerGroupQuantF4Descriptor.restype = c_int32
+    lib.infiniopDestroyPerGroupQuantF4Descriptor.argtypes = [
+        infiniopOperatorDescriptor_t,
+    ]
+
+
+@OpRegister.operator
 def softplus_(lib):
     lib.infiniopCreateSoftplusDescriptor.restype = c_int32
     lib.infiniopCreateSoftplusDescriptor.argtypes = [
