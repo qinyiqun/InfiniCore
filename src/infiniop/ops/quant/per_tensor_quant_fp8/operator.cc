@@ -11,8 +11,7 @@ __C infiniStatus_t infiniopCreatePerTensorQuantF8Descriptor(infiniopHandle_t han
                                                             infiniopTensorDescriptor_t x_packed_desc,
                                                             infiniopTensorDescriptor_t x_scale_desc,
                                                             infiniopTensorDescriptor_t x_zero_desc,
-                                                            infiniopTensorDescriptor_t x_desc,
-                                                            bool is_static) {
+                                                            infiniopTensorDescriptor_t x_desc) {
 #define CREATE(CASE, NAMESPACE)                                                             \
     case CASE:                                                                              \
         return op::per_tensor_quant_fp8::NAMESPACE::Descriptor::create(                     \
@@ -21,8 +20,7 @@ __C infiniStatus_t infiniopCreatePerTensorQuantF8Descriptor(infiniopHandle_t han
             x_packed_desc,                                                                  \
             x_scale_desc,                                                                   \
             x_zero_desc,                                                                    \
-            x_desc,                                                                         \
-            is_static);
+            x_desc);
     switch (handle->device) {
 #ifdef ENABLE_NVIDIA_API
         CREATE(INFINI_DEVICE_NVIDIA, nvidia)
@@ -61,11 +59,12 @@ __C infiniStatus_t infiniopPerTensorQuantF8(infiniopPerTensorQuantF8Descriptor_t
                                             void *x_scale,
                                             void *x_zero,
                                             const void *x,
+                                            const bool is_static,
                                             void *stream) {
 #define QUANT(CASE, NAMESPACE)                                                                       \
     case CASE:                                                                                       \
         return reinterpret_cast<op::per_tensor_quant_fp8::NAMESPACE::Descriptor *>(desc)->calculate( \
-            workspace, workspace_size, x_packed, x_scale, x_zero, x, stream);
+            workspace, workspace_size, x_packed, x_scale, x_zero, x, is_static, stream);
 
     switch (desc->device_type) {
 #ifdef ENABLE_NVIDIA_API

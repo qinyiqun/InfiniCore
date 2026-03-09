@@ -39,10 +39,9 @@ infiniStatus_t Descriptor::create(
     infiniopTensorDescriptor_t x_packed_desc,
     infiniopTensorDescriptor_t x_scale_desc,
     infiniopTensorDescriptor_t x_zero_desc,
-    infiniopTensorDescriptor_t x_desc,
-    bool is_static) {
+    infiniopTensorDescriptor_t x_desc) {
 
-    auto info = PerTensorQuantF8Info::createPerTensorQuantF8Info(x_packed_desc, x_scale_desc, x_zero_desc, x_desc, is_static);
+    auto info = PerTensorQuantF8Info::createPerTensorQuantF8Info(x_packed_desc, x_scale_desc, x_zero_desc, x_desc);
 
     CHECK_RESULT(info);
 
@@ -54,9 +53,9 @@ infiniStatus_t Descriptor::create(
 }
 
 template <unsigned int BLOCK_SIZE, typename Tdata>
-infiniStatus_t per_tensor_quant_fp8Kernel(const PerTensorQuantF8Info &info, __nv_fp8_e4m3 *x_packed, float *x_scale, float *x_zero, const Tdata *x, cudaStream_t stream) {
+infiniStatus_t per_tensor_quant_fp8Kernel(const PerTensorQuantF8Info &info, __nv_fp8_e4m3 *x_packed, float *x_scale, float *x_zero, const Tdata *x, const bool is_static, cudaStream_t stream) {
     const uint64_t num_elements = info.num_elements;
-    bool is_static = info.is_static;
+
 #ifdef ENABLE_NVIDIA_API
     constexpr unsigned int block_size = 256;
 #else
@@ -81,11 +80,11 @@ infiniStatus_t per_tensor_quant_fp8Kernel(const PerTensorQuantF8Info &info, __nv
 }
 
 infiniStatus_t Descriptor::calculate(void *workspace, size_t workspace_size,
-                                     void *x_packed, void *x_scale, void *x_zero, const void *x,
+                                     void *x_packed, void *x_scale, void *x_zero, const void *x, const bool is_static,
                                      void *stream_) const {
     cudaStream_t stream = (cudaStream_t)stream_;
 #define QUANT(BLOCK_SIZE, TDATA) \
-    per_tensor_quant_fp8Kernel<BLOCK_SIZE, TDATA>(_info, (__nv_fp8_e4m3 *)x_packed, (float *)x_scale, (float *)x_zero, (const TDATA *)x, stream)
+    per_tensor_quant_fp8Kernel<BLOCK_SIZE, TDATA>(_info, (__nv_fp8_e4m3 *)x_packed, (float *)x_scale, (float *)x_zero, (const TDATA *)x, is_static, stream)
 #define QUANT_WITH_BLOCK_SIZE(BLOCK_SIZE)            \
     {                                                \
         if (_info.dtype == INFINI_DTYPE_F16)         \

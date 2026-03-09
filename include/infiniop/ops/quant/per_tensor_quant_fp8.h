@@ -10,8 +10,7 @@ __C __export infiniStatus_t infiniopCreatePerTensorQuantF8Descriptor(infiniopHan
                                                                      infiniopTensorDescriptor_t x_packed_desc,
                                                                      infiniopTensorDescriptor_t x_scale_desc,
                                                                      infiniopTensorDescriptor_t x_zero_desc,
-                                                                     infiniopTensorDescriptor_t x_desc,
-                                                                     bool is_static);
+                                                                     infiniopTensorDescriptor_t x_desc);
 
 __C __export infiniStatus_t infiniopGetPerTensorQuantF8WorkspaceSize(infiniopPerTensorQuantF8Descriptor_t desc, size_t *size);
 
@@ -22,6 +21,7 @@ __C __export infiniStatus_t infiniopPerTensorQuantF8(infiniopPerTensorQuantF8Des
                                                      void *x_scale,
                                                      void *x_zero,
                                                      const void *x,
+                                                     const bool is_static,
                                                      void *stream);
 
 __C __export infiniStatus_t infiniopDestroyPerTensorQuantF8Descriptor(infiniopPerTensorQuantF8Descriptor_t desc);
