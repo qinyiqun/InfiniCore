@@ -59,38 +59,15 @@ def per_token_quant_fp8_torch(x, symmetric):
         return
     else:
         assert x.dim() == 2, "per-token quant expects [num_tokens, hidden_dim]"
-
-        # ------------------------------------------------------------
-        # Pass-1: per-token absmax (对齐 CUDA 的 warpReduceMax)
-        # ------------------------------------------------------------
-        # CUDA: max_value = max_j |x[token_id, j]|
         absmax = x.abs().amax(dim=1)  # [num_tokens]
-
-        # ------------------------------------------------------------
-        # scale = absmax / FP8_E4M3_MAX
-        # CUDA 中 scale 是 per-token 写入 output_s[token_id]
-        # ------------------------------------------------------------
         scale = absmax / FP8_E4M3_MAX  # [num_tokens]
 
         inv_scale = 1.0 / scale
         inv_scale[scale == 0] = float("inf")  # [num_tokens]
 
-        # ------------------------------------------------------------
-        # Pass-2: x * inv_scale
-        # CUDA: val = input * scale_inv
-        # ------------------------------------------------------------
         x_scaled = x * inv_scale.unsqueeze(1)  # broadcast to [N, H]
 
-        # ------------------------------------------------------------
-        # clip 到 FP8 E4M3 可表示范围
-        # CUDA: fmaxf(fminf(val, FP8_E4M3_MAX), -FP8_E4M3_MAX)
-        # ------------------------------------------------------------
         x_clamped = torch.clamp(x_scaled, -FP8_E4M3_MAX, FP8_E4M3_MAX)
-
-        # ------------------------------------------------------------
-        # cast to FP8
-        # CUDA: static_cast<DST_DTYPE>(val)
-        # ------------------------------------------------------------
         q = x_clamped.to(torch.float8_e4m3fn)
 
         return q, scale.float(), None
@@ -170,21 +147,19 @@ def test(
 
     atol, rtol = get_tolerance(_TOLERANCE_MAP, dtype)
     if DEBUG:
-        debug(x_packed.actual_tensor().float(), x_p.float(), atol=atol, rtol=rtol)
+        debug(x_packed.actual_tensor().float(), x_p.float(), atol=32, rtol=0)
         debug(x_scale.actual_tensor(), x_s, atol=atol, rtol=rtol)
         if symmetric == False:
             debug(x_zero.actual_tensor(), x_z, atol=atol, rtol=rtol)
 
-    # print(x_s - x_scale.actual_tensor())
-    # print(x_packed.actual_tensor().float() - x_p.float())
     if symmetric:
         assert torch.allclose(
-            x_packed.actual_tensor().float(), x_p.float(), atol=2, rtol=2
+            x_packed.actual_tensor().float(), x_p.float(), atol=32, rtol=0
         ) and torch.allclose(x_scale.actual_tensor(), x_s, atol=atol, rtol=rtol)
     else:
         assert (
             torch.allclose(
-                x_packed.actual_tensor().float(), x_p.float(), atol=2, rtol=2
+                x_packed.actual_tensor().float(), x_p.float(), atol=32, rtol=0
             )
             and torch.allclose(x_scale.actual_tensor(), x_s, atol=atol, rtol=rtol)
             and torch.allclose(x_zero.actual_tensor(), x_z, atol=atol, rtol=rtol)

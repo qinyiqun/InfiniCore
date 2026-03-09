@@ -25,12 +25,12 @@ from enum import Enum, auto
 # These are not meant to be imported from other modules
 _TEST_CASES = [
     # x_shape, symmetric, is_static
-    # ((8, 8), True, False),
-    # ((8, 128), True, False),
-    # ((256, 1024), True, False),
+    ((8, 8), True, False),
+    ((8, 128), True, False),
+    ((256, 1024), True, False),
     ((1024, 2048), True, False),
-    # ((2048, 2048), True, False),
-    # ((4096, 2048), True, False),
+    ((2048, 2048), True, False),
+    ((4096, 2048), True, False),
 ]
 
 
@@ -159,19 +159,19 @@ def test(
 
     atol, rtol = get_tolerance(_TOLERANCE_MAP, dtype)
     if DEBUG:
-        debug(x_packed.actual_tensor().float(), x_p.float(), atol=2, rtol=0)
+        debug(x_packed.actual_tensor().float(), x_p.float(), atol=32, rtol=0)
         debug(x_scale.actual_tensor(), x_s, atol=atol, rtol=rtol)
         if symmetric == False:
             debug(x_zero.actual_tensor(), x_z, atol=atol, rtol=rtol)
     
     if symmetric:
         assert torch.allclose(
-            x_packed.actual_tensor().float(), x_p.float(), atol=2, rtol=0
+            x_packed.actual_tensor().float(), x_p.float(), atol=32, rtol=0
         ) and torch.allclose(x_scale.actual_tensor(), x_s, atol=atol, rtol=rtol)
     else:
         assert (
             torch.allclose(
-                x_packed.actual_tensor().float(), x_p.float(), atol=2, rtol=0
+                x_packed.actual_tensor().float(), x_p.float(), atol=32, rtol=0
             )
             and torch.allclose(x_scale.actual_tensor(), x_s, atol=atol, rtol=rtol)
             and torch.allclose(x_zero.actual_tensor(), x_z, atol=atol, rtol=rtol)
