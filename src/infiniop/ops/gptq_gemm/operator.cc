@@ -1,7 +1,7 @@
 #include "../../operator.h"
 #include "../../handle.h"
 #include "infiniop/ops/gptq_gemm.h"
-
+#include <iostream>
 #if defined(ENABLE_NVIDIA_API) || defined(ENABLE_QY_API)
 #include "nvidia/gptq_gemm_nvidia.cuh"
 #endif
@@ -36,6 +36,7 @@ __INFINI_C infiniStatus_t infiniopCreateGptqGemmDescriptor(
     default:
         return INFINI_STATUS_DEVICE_TYPE_NOT_SUPPORTED;
     }
+#undef CREATE
 }
 
 __INFINI_C infiniStatus_t infiniopGetGptqGemmWorkspaceSize(
@@ -57,6 +58,7 @@ __INFINI_C infiniStatus_t infiniopGetGptqGemmWorkspaceSize(
     default:
         return INFINI_STATUS_DEVICE_TYPE_NOT_SUPPORTED;
     }
+#undef GET
 }
 
 __INFINI_C infiniStatus_t infiniopGptqGemm(
@@ -86,6 +88,7 @@ __INFINI_C infiniStatus_t infiniopGptqGemm(
     default:
         return INFINI_STATUS_DEVICE_TYPE_NOT_SUPPORTED;
     }
+#undef CALCULATE
 }
 
 __INFINI_C infiniStatus_t infiniopDestroyGptqGemmDescriptor(
@@ -106,4 +109,5 @@ __INFINI_C infiniStatus_t infiniopDestroyGptqGemmDescriptor(
     default:
         return INFINI_STATUS_DEVICE_TYPE_NOT_SUPPORTED;
     }
+#undef DELETE
 }

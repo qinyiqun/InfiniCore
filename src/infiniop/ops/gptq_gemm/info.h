@@ -3,6 +3,7 @@
 
 #include "../../../utils.h"
 #include "../../tensor.h"
+#include <iostream>
 #include <optional>
 #include <vector>
 
@@ -30,15 +31,15 @@ public:
         infiniopTensorDescriptor_t b_g_idx_desc,
         bool use_exllama,
         int quant_bit) {
-
         auto dtype = out_desc->dtype();
         CHECK_DTYPE(dtype, INFINI_DTYPE_F16);
         if (b_scales_desc->dtype() != dtype) {
             return INFINI_STATUS_BAD_TENSOR_DTYPE;
         }
-        if (b_zeros_desc->dtype() != INFINI_DTYPE_I32 || b_g_idx_desc->dtype() != INFINI_DTYPE_I32) {
-            return INFINI_STATUS_BAD_TENSOR_DTYPE;
-        }
+
+        // if (b_zeros_desc->dtype() != INFINI_DTYPE_I32 || b_g_idx_desc->dtype() != INFINI_DTYPE_I32) {
+        // return INFINI_STATUS_BAD_TENSOR_DTYPE;
+        // }
 
         size_t M = out_desc->shape()[0];
         size_t N = out_desc->shape()[1];
@@ -58,6 +59,7 @@ public:
                             && b_scales_desc->ndim() == ndim
                             && b_zeros_desc->ndim() == ndim,
                         INFINI_STATUS_BAD_TENSOR_SHAPE);
+
         CHECK_OR_RETURN(b_scales_desc->shape()[1] == N
                             && static_cast<int>(b_scales_desc->shape()[0]) == num_groups,
                         INFINI_STATUS_BAD_TENSOR_SHAPE);

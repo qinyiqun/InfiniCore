@@ -30,6 +30,7 @@
 #include "infiniop/ops/fmod.h"
 #include "infiniop/ops/gelu.h"
 #include "infiniop/ops/gemm.h"
+#include "infiniop/ops/gptq_gemm.h"
 #include "infiniop/ops/hardswish.h"
 #include "infiniop/ops/hardtanh.h"
 #include "infiniop/ops/int8_gemm.h"

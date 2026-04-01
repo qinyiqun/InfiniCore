@@ -34,7 +34,6 @@ void *plan(Tensor c, const Tensor &a_p, const Tensor &a_s, const Tensor &b_p, co
         graph::GraphTensor(a_s),
         graph::GraphTensor(b_p),
         graph::GraphTensor(b_s),
-        // bias.has_value() ? bias.value()->desc() : nullptr};
         bias ? std::optional<graph::GraphTensor>(graph::GraphTensor(*bias)) : std::nullopt};
 }
 
@@ -46,7 +45,6 @@ void run(void *planned_meta) {
         planned->workspace->data(),
         planned->workspace->numel(),
         planned->c->data(),
-        // planned->bias->data(),
         planned->bias.has_value() ? planned->bias.value()->data() : nullptr,
         planned->a_p->data(),
         planned->a_s->data(),

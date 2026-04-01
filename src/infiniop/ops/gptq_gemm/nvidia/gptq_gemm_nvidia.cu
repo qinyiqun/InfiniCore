@@ -6,6 +6,8 @@
 #include <cub/block/block_reduce.cuh>
 
 #include "../cuda/kernel.cuh"
+
+#include <iostream>
 namespace vllm {
 namespace gptq {
 
@@ -1657,7 +1659,6 @@ cublasStatus_t GptqGemmKernel(void *c, const void *a, const void *b,
 
     char *workspace_ptr = reinterpret_cast<char *>(workspace);
     half *temp_dq = reinterpret_cast<half *>(workspace_ptr); // shape ?
-
     vllm::gptq::gemm_half_q_half_cuda(
         cublas_handle, (const half *)a,
         (const uint32_t *)b,
@@ -1693,16 +1694,14 @@ infiniStatus_t Descriptor::create(
     infiniopTensorDescriptor_t b_g_idx_desc,
     bool use_exllama,
     int quant_bit) {
-
+    
     auto info = GptqGemmInfo::createGptqGemmInfo(out_desc, a_desc, b_desc, b_scales_desc, b_zeros_desc, b_g_idx_desc, use_exllama, quant_bit);
-
     CHECK_RESULT(info);
+    size_t workspace_size =  b_desc->shape()[0] * 32 / static_cast<int64_t>(quant_bit) * b_desc->shape()[1] * infiniSizeOf(a_desc->dtype());
 
-    size_t workspace_size = b_desc->shape()[0] * 32 / static_cast<int64_t>(quant_bit) * b_desc->shape()[1] * infiniSizeOf(a_desc->dtype());
     *desc_ptr = new Descriptor(
         new Opaque{reinterpret_cast<device::nvidia::Handle *>(handle)->internal()},
         info.take(), workspace_size, handle->device, handle->device_id);
-
     return INFINI_STATUS_SUCCESS;
 }
 
